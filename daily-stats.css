@@ -1,0 +1,387 @@
+/* daily-stats.css - 每日学习记录和统计功能的样式 */
+
+/* 热力图样式 */
+.heatmap-container {
+  display: flex;
+  margin-top: 16px;
+  margin-bottom: 16px;
+}
+
+.week-labels {
+  display: flex;
+  flex-direction: column;
+  margin-right: 4px;
+}
+
+.week-label {
+  height: 12px;
+  width: 20px;
+  font-size: 10px;
+  color: #9499a0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 2px;
+}
+
+.heatmap-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 12px);
+  grid-template-rows: repeat(7, 12px);
+  grid-gap: 2px;
+  flex: 1;
+}
+
+.heatmap-cell {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  background-color: #eee;
+  cursor: pointer;
+}
+
+.heatmap-legend {
+  display: flex;
+  justify-content: center;
+  margin-top: 8px;
+  font-size: 10px;
+  color: #9499a0;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  margin-right: 12px;
+}
+
+.legend-color {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  margin-right: 4px;
+}
+
+.legend-label {
+  font-size: 10px;
+}
+
+/* 导出按钮 */
+.export-btn {
+  padding: 4px 8px;
+  background: #f6f7f8;
+  border: 1px solid #e3e5e7;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #6d757a;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.export-btn:hover {
+  background: #e3e5e7;
+}
+
+/* 统计卡片 */
+.stats-card {
+  background: white;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.stats-card-title {
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* 标签切换 */
+.tab-container {
+  display: flex;
+  border-bottom: 1px solid #e3e5e7;
+  margin-bottom: 16px;
+}
+
+.tab-item {
+  padding: 8px 16px;
+  font-size: 14px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+}
+
+.tab-item.active {
+  color: #00a1d6;
+  border-bottom-color: #00a1d6;
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+/* 日历容器 */
+.calendar-container {
+  margin: 20px 0;
+  padding: 15px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.month-navigation {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.month-navigation button {
+  background: #f0f0f0;
+  border: none;
+  border-radius: 4px;
+  padding: 5px 10px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.month-navigation button:hover {
+  background: #e0e0e0;
+}
+
+#month-display {
+  margin: 0;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+/* 日历网格 */
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+
+.weekday-header {
+  text-align: center;
+  font-weight: bold;
+  padding: 5px 0;
+  color: #666;
+  font-size: 12px;
+}
+
+.calendar-day {
+  height: 40px;
+  border-radius: 4px;
+  background: #f5f5f5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: all 0.2s;
+}
+
+.calendar-day.empty {
+  background: transparent;
+}
+
+.calendar-day.has-data {
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.calendar-day.has-data:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.date-number {
+  font-size: 12px;
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  color: #333;
+}
+
+.study-time-indicator {
+  font-size: 10px;
+  color: #00a1d6;
+  font-weight: bold;
+}
+
+/* 每日详情 */
+#daily-detail-container {
+  margin-top: 20px;
+  padding: 15px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  display: none;
+}
+
+.daily-detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.date-info {
+  font-size: 18px;
+  font-weight: bold;
+  color: #00a1d6;
+}
+
+.close-button {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.close-button:hover {
+  background: #e0e0e0;
+}
+
+.daily-summary {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.summary-card {
+  flex: 1;
+  background: #f9f9f9;
+  border-radius: 6px;
+  padding: 10px;
+  text-align: center;
+  margin: 0 5px;
+}
+
+.summary-value {
+  font-size: 20px;
+  font-weight: bold;
+  color: #00a1d6;
+}
+
+.summary-label {
+  font-size: 12px;
+  color: #666;
+  margin-top: 5px;
+}
+
+.distribution-chart {
+  margin: 20px 0;
+}
+
+.distribution-chart h4 {
+  margin-bottom: 10px;
+  color: #444;
+}
+
+.daily-videos, .study-sessions {
+  margin: 20px 0;
+}
+
+.daily-videos h4, .study-sessions h4 {
+  margin-bottom: 10px;
+  color: #444;
+}
+
+.video-list, .session-list {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.video-item, .session-item {
+  background: #f5f5f5;
+  border-radius: 6px;
+  padding: 10px;
+  margin-bottom: 8px;
+}
+
+.video-title, .session-title {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.video-meta, .session-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #666;
+}
+
+.session-time {
+  font-size: 12px;
+  color: #00a1d6;
+  margin-bottom: 5px;
+}
+
+.session-link {
+  display: inline-block;
+  margin-top: 8px;
+  color: #00a1d6;
+  text-decoration: none;
+  font-size: 12px;
+}
+
+.playback-rate {
+  background: #00a1d6;
+  color: white;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-size: 10px;
+}
+
+.empty-message {
+  text-align: center;
+  color: #999;
+  padding: 20px;
+  font-style: italic;
+}
+
+.loading, .error {
+  text-align: center;
+  padding: 20px;
+}
+
+.error {
+  color: #e74c3c;
+}
+
+/* 添加通用的标题样式 */
+.section-heading {
+  margin-bottom: 10px;
+  color: #444;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* 使用这个通用类替换重复样式 */
+.daily-videos h4, 
+.study-sessions h4,
+.distribution-chart h4 {
+  margin-bottom: 10px;
+  color: #444;
+}

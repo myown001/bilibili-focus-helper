@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>B站学习助手 - 学习统计</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+    
+    body {
+      width: 380px;
+      min-height: 500px;
+      background: #f6f7f8;
+      color: #18191c;
+      padding: 16px;
+    }
+    
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #e3e5e7;
+    }
+    
+    .header h1 {
+      font-size: 18px;
+      color: #00a1d6;
+    }
+    
+    .period-selector {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .period-btn {
+      padding: 4px 8px;
+      border: 1px solid #e3e5e7;
+      border-radius: 4px;
+      background: white;
+      cursor: pointer;
+      font-size: 12px;
+      transition: all 0.2s;
+    }
+    
+    .period-btn.active {
+      background: #00a1d6;
+      color: white;
+      border-color: #00a1d6;
+    }
+    
+    .stats-container {
+      background: white;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    
+    .stats-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    
+    .stats-title {
+      font-size: 16px;
+      font-weight: 500;
+    }
+    
+    .stats-summary {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    
+    .stats-item {
+      text-align: center;
+      flex: 1;
+    }
+    
+    .stats-value {
+      font-size: 24px;
+      font-weight: 600;
+      color: #00a1d6;
+      margin-bottom: 4px;
+    }
+    
+    .stats-label {
+      font-size: 12px;
+      color: #9499a0;
+    }
+    
+    .chart-container {
+      height: 180px;
+      margin-bottom: 16px;
+    }
+    
+    .top-videos {
+      margin-top: 16px;
+    }
+    
+    .video-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #f6f7f8;
+    }
+    
+    .video-title {
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-size: 13px;
+    }
+    
+    .video-duration {
+      font-size: 13px;
+      color: #9499a0;
+      margin-left: 8px;
+    }
+    
+    .history-container {
+      background: white;
+      border-radius: 8px;
+      padding: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    
+    .history-item {
+      padding: 10px 0;
+      border-bottom: 1px solid #f6f7f8;
+    }
+    
+    .history-title {
+      font-size: 14px;
+      margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .history-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: #9499a0;
+    }
+    
+    .load-more {
+      display: block;
+      width: 100%;
+      padding: 8px;
+      margin-top: 12px;
+      background: #f6f7f8;
+      border: none;
+      border-radius: 4px;
+      color: #6d757a;
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.2s;
+    }
+    
+    .load-more:hover {
+      background: #e3e5e7;
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 20px;
+      color: #9499a0;
+      font-size: 14px;
+    }
+  </style>
+  <link rel="stylesheet" href="daily-stats.css">
+</head>
+<body>
+  <div class="header">
+    <h1>学习统计</h1>
+    <div class="period-selector">
+      <button class="period-btn active" data-period="week">本周</button>
+      <button class="period-btn" data-period="month">本月</button>
+      <button class="period-btn" data-period="year">今年</button>
+    </div>
+  </div>
+  
+  <div class="stats-container">
+    <div class="stats-header">
+      <div class="stats-title">学习统计</div>
+      <div class="period-selector">
+        <button class="period-btn active" data-period="week">周</button>
+        <button class="period-btn" data-period="month">月</button>
+        <button class="period-btn" data-period="year">年</button>
+      </div>
+    </div>
+    
+    <div class="stats-summary">
+      <div class="stats-item">
+        <div class="stats-value" id="total-time">0小时</div>
+        <div class="stats-label">总学习时长</div>
+      </div>
+      <div class="stats-item">
+        <div class="stats-value" id="video-count">0</div>
+        <div class="stats-label">学习视频数</div>
+      </div>
+      <div class="stats-item">
+        <div class="stats-value" id="avg-duration">0分钟</div>
+        <div class="stats-label">平均每次时长</div>
+      </div>
+      <div class="stats-item">
+        <div class="stats-value" id="avg-rate">1.0x</div>
+        <div class="stats-label">平均播放速率</div>
+      </div>
+    </div>
+    
+    <div class="chart-container">
+      <canvas id="study-chart"></canvas>
+    </div>
+    
+    <div class="top-videos">
+      <div class="stats-title">学习最多的视频</div>
+      <div id="top-videos-list">
+        <div class="empty-state">暂无数据</div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="history-container">
+    <div class="stats-header">
+      <div class="stats-title">学习历史</div>
+    </div>
+    
+    <div id="history-list">
+      <div class="empty-state">暂无历史记录</div>
+    </div>
+    
+    <button class="load-more" id="load-more-btn">加载更多</button>
+  </div>
+
+  <div class="section-title">
+    <h3>每日学习记录</h3>
+  </div>
+
+  <div id="calendar-container" class="calendar-container">
+    <!-- 日历将通过JavaScript动态填充 -->
+  </div>
+
+  <!-- 每日详情容器 -->
+  <div id="daily-detail-container">
+    <!-- 详情将通过JavaScript动态填充 -->
+  </div>
+
+  <script src="chart-fix.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

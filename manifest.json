@@ -1,0 +1,38 @@
+{
+  "manifest_version": 3,
+  "name": "B站学习助手",
+  "version": "1.0",
+  "description": "帮助在B站专注学习",
+  "permissions": [
+    "storage",
+    "activeTab"
+  ],
+  "optional_permissions": [
+    "notifications"
+  ],
+  "host_permissions": [
+    "*://*.bilibili.com/*"
+  ],
+  "offline_enabled": true,
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "B站学习统计"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://*.bilibili.com/*"],
+      "js": ["study-recorder.js", "content.js"],
+      "css": ["styles.css", "content.css"],
+      "run_at": "document_end"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["chart.js"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

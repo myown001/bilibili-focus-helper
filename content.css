@@ -1,0 +1,429 @@
+/* 隐藏非视频元素的更精确方法 - 仅在全屏模式下应用 */
+body.fullscreen-mode > *:not(#bilibili-player):not(.bpx-player-container):not(.player-container):not(.bilibili-player-video-container) {
+  display: none !important;
+}
+
+/* 确保视频播放器内的元素可见 - 使用更精确的选择器 */
+.bpx-player-container, #bilibili-player, .player-container, .bilibili-player-video-container,
+.bpx-player-video-area, .bpx-player-primary-area, .bpx-player-video-wrap, .bpx-player-video,
+.bilibili-player-area, .bilibili-player-video-wrap, .bilibili-player-video {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* 特别确保视频元素可见 */
+.bpx-player-container video, #bilibili-player video, .player-container video, .bilibili-player-video-container video,
+.bpx-player-video video, .bilibili-player-video video {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  z-index: 2147483647 !important; /* 最高z-index值 */
+  position: relative !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+  background: transparent !important;
+}
+
+/* 仅显示视频播放器 - 仅在全屏模式下应用 */
+body.fullscreen-mode #bilibili-player, 
+body.fullscreen-mode .bpx-player-container, 
+body.fullscreen-mode .player-container, 
+body.fullscreen-mode .bilibili-player-video-container {
+  display: block !important;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 999999 !important;
+  background: #000 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  object-fit: contain !important;
+}
+
+/* 视频元素本身 */
+.bpx-player-video-area,
+.bpx-player-video-wrap,
+.bpx-player-container video,
+#bilibili-player video,
+.player-container video,
+.bilibili-player-video-container video,
+video {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  z-index: 10000000 !important;
+}
+
+/* 强制隐藏滚动条 */
+body {
+  overflow: hidden !important;
+}
+
+/* 全屏状态优化 */
+:-webkit-full-screen #bilibili-player,
+:-moz-full-screen #bilibili-player,
+:fullscreen #bilibili-player {
+  width: 100vw !important;
+  height: 100vh !important;
+  background: #000 !important;
+}
+
+/* 隐藏推荐视频 */
+#arc_toolbar, .bpx-player-ending-related, .recommend-container {
+  display: none !important;
+}
+
+/* 隐藏顶部导航 */
+.bili-header, .international-header {
+  display: none !important;
+}
+
+/* 隐藏弹幕和控件（可选） */
+.bpx-player-dm-wrap, .bpx-player-control-wrap {
+  opacity: 0.1 !important;
+  transition: opacity 0.3s;
+}
+
+.bpx-player-dm-wrap:hover, .bpx-player-control-wrap:hover {
+  opacity: 1 !important;
+}
+
+/* 隐藏侧边栏 */
+.container.right-container {
+  display: none !important;
+}
+
+/* 隐藏评论区 */
+.comment-container {
+  display: none !important;
+}
+
+/* 示例：
+   #arc_toolbar { display: none !important; } 
+   .comment-container { display: none !important; }
+   .right-container { display: none !important; }
+*/
+
+/* 强化隐藏元素 */
+.player-auxiliary, /* 附加控件 */
+.bpx-player-top-right, /* 右上角按钮 */
+.bpx-player-ending-panel /* 结束面板 */ {
+  display: none !important;
+}
+
+/* 优化警告提示样式 */
+.focus-warning {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #ff4444;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+  z-index: 10000;
+}
+
+/* 强制隐藏滚动条 */
+html.focus-mode {
+  overflow: hidden !important;
+}
+
+html.focus-mode ::-webkit-scrollbar {
+  display: none !important;
+}
+
+/* 合集导航优化 */
+.collection-list {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10000;
+  background: rgba(0,0,0,0.8);
+  padding: 10px;
+  border-radius: 8px;
+}
+
+.collection-list a {
+  color: #fff !important;
+  margin: 0 10px;
+}
+
+/* 隐藏浏览器默认全屏提示 */
+::backdrop {
+  background: #000 !important;
+}
+
+/* 确保视频搜索结果中的标题和描述可见 */
+.bili-video-card__info--tit,
+.bili-video-card__info--desc,
+.video-list-item .title,
+.video-list-item .des,
+.search-video-card .title,
+.search-video-card .des,
+.bili-video-card .bili-video-card__info--tit,
+.bili-video-card .bili-video-card__info--desc {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  height: auto !important;
+  width: auto !important;
+  margin: initial !important;
+  padding: initial !important;
+  position: relative !important;
+  z-index: auto !important;
+  pointer-events: auto !important;
+}
+
+/* 修复搜索结果页面的视频卡片样式 */
+.search-page .video-item .info .title,
+.search-page .video-item .info .desc,
+.search-page .bili-video-card .bili-video-card__info--tit,
+.search-page .bili-video-card .bili-video-card__info--desc {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* 确保视频卡片底部信息可见 */
+.bili-video-card__info--bottom {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* 搜索页面特定优化 */
+body.search-page {
+  overflow: auto !important;
+  height: auto !important;
+  position: relative !important;
+  background-color: #fff !important;
+}
+
+/* 确保搜索页面的视频卡片正常显示 */
+.search-page .video-item,
+.search-page .bili-video-card {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  height: auto !important;
+  margin-bottom: 20px !important;
+  transform: none !important;
+  transition: none !important; /* 禁用可能导致卡顿的过渡效果 */
+  will-change: auto !important; /* 避免不必要的GPU加速 */
+}
+
+/* 性能优化：减少不必要的重绘和重排 */
+.search-page .video-list .video-item {
+  contain: content !important; /* 使用CSS containment优化渲染性能 */
+}
+
+/* 确保搜索页面的分页控件可见且可点击 */
+.search-page .page-wrap,
+.search-page .pager {
+  display: block !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+
+/* 优化搜索页面滚动性能 */
+.search-page .search-content {
+  transform: translateZ(0) !important; /* 启用GPU加速 */
+  backface-visibility: hidden !important;
+  perspective: 1000px !important;
+}
+
+/* UP主页面视频卡片标题和描述修复 */
+.up-page-header, .up-info-holder, .up-info-wrap,
+.up-info-container, .up-info, .up-face, .up-name,
+.up-videos-list, .up-video-item, .up-video-info,
+.up-video-title, .up-video-desc, .up-video-right {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  height: auto !important;
+  overflow: visible !important;
+  margin: initial !important;
+  padding: initial !important;
+}
+
+/* 修复UP主页面视频标题 */
+.small-item .title, .mini-item .title,
+.video-page-card .title, .video-page-card-small .title,
+.video-list .video-title, .video-list .info .title,
+.up-info-v2-video .title, .up-info-video .title {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  height: auto !important;
+  overflow: visible !important;
+  color: #000 !important;
+  font-size: 14px !important;
+}
+
+/* 确保视频卡片完全可见 */
+.video-card, .small-card, .video-page-card, 
+.video-item, .small-item, .mini-item {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  height: auto !important;
+  margin-bottom: 20px !important;
+  overflow: visible !important;
+  background-color: #fff !important;
+}
+
+/* 强制显示视频信息 */
+.info, .video-info, .video-card__info, .bili-video-card__info {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  height: auto !important;
+  color: #000 !important;
+}
+
+/* 确保视频时长标签可见 */
+.duration, .video-duration, .bili-video-card__stats__duration {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* 修复UP主页面的布局 */
+.up-page-wrapper {
+  overflow: auto !important;
+  height: auto !important;
+}
+
+/* 确保页面可以正常滚动 */
+body.space-page {
+  overflow: auto !important;
+  height: auto !important;
+  position: relative !important;
+  background-color: #fff !important;
+}
+
+/* 搜索结果页面特定修复 - 更精确的选择器 */
+.search-container .video-list .video-item .info .title,
+.search-container .video-list .video-item .info .desc,
+.search-container .bili-video-card .bili-video-card__info--tit,
+.search-container .bili-video-card .bili-video-card__info--desc,
+.search-container .bili-video-card__info--right,
+.search-container .bili-video-card__info,
+.search-container .video-item-biref,
+.search-container .video-item-biref__info,
+.search-container .video-item-biref__title,
+.search-container .video-item-biref__desc {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  height: auto !important;
+  width: auto !important;
+  margin: 5px 0 !important;
+  padding: 0 !important;
+  position: relative !important;
+  z-index: auto !important;
+  pointer-events: auto !important;
+  color: #000 !important;
+  font-size: 14px !important;
+  line-height: 1.5 !important;
+  text-overflow: ellipsis !important;
+  overflow: visible !important;
+  white-space: normal !important;
+}
+
+/* 确保搜索结果页面的视频卡片完全可见 */
+.search-container .video-item,
+.search-container .bili-video-card,
+.search-container .video-item-biref {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  height: auto !important;
+  min-height: 100px !important;
+  margin-bottom: 20px !important;
+  padding: 10px !important;
+  background-color: #fff !important;
+  border-radius: 4px !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05) !important;
+}
+
+/* 强制显示搜索结果页面的视频缩略图 */
+.search-container .video-item .img-anchor,
+.search-container .bili-video-card .bili-video-card__cover,
+.search-container .video-item-biref__cover {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* 确保搜索结果页面可以正常滚动 */
+.search-container,
+.search-content,
+#server-search-app,
+.search-page {
+  overflow: auto !important;
+  height: auto !important;
+  min-height: 100vh !important;
+}
+
+/* 修复搜索结果页面的布局 */
+.search-container .body-contain,
+.search-container .search-content {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  height: auto !important;
+  width: auto !important;
+  margin: 0 auto !important;
+  padding: 20px !important;
+}
+
+/* 确保视频控制栏在全屏模式下可见 */
+body.fullscreen-mode .bpx-player-control-wrap,
+body.fullscreen-mode .bilibili-player-video-control-wrap,
+body.fullscreen-mode .bpx-player-sending-bar,
+body.fullscreen-mode .bilibili-player-video-sendbar,
+body.fullscreen-mode .bpx-player-ctrl-btn,
+body.fullscreen-mode .bilibili-player-video-btn,
+body.fullscreen-mode .bpx-player-ctrl-volume,
+body.fullscreen-mode .bilibili-player-video-volume,
+body.fullscreen-mode .bpx-player-ctrl-quality,
+body.fullscreen-mode .bilibili-player-video-quality,
+body.fullscreen-mode .bpx-player-video-progress,
+body.fullscreen-mode .bilibili-player-video-progress {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  z-index: 1000001 !important;
+}
+
+/* 隐藏弹幕相关选项 */
+body.fullscreen-mode .bpx-player-dm-wrap,
+body.fullscreen-mode .bilibili-player-video-danmaku,
+body.fullscreen-mode .bpx-player-dm-btn-wrap,
+body.fullscreen-mode .bilibili-player-video-danmaku-switch,
+body.fullscreen-mode .bpx-player-dm-setting,
+body.fullscreen-mode .bilibili-player-video-danmaku-setting {
+  display: none !important;
+}
+
+/* 确保选集功能可见 */
+body.fullscreen-mode .bpx-player-playlist-wrap,
+body.fullscreen-mode .bilibili-player-video-playlist-wrap,
+body.fullscreen-mode .bpx-player-sending-bar,
+body.fullscreen-mode .bilibili-player-video-sendbar {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  z-index: 1000002 !important;
+}
