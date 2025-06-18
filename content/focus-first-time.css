@@ -1,0 +1,148 @@
+/* 首次设置和退出对话框样式 */
+.focus-first-time-dialog,
+.focus-exit-dialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 9999;
+  min-width: 400px;
+  max-width: 90%;
+  padding: 20px;
+}
+
+/* 对话框标题 */
+.focus-first-time-dialog .dialog-title,
+.focus-exit-dialog .dialog-title {
+  font-size: 18px;
+  font-weight: 500;
+  color: #18191c;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+/* 对话框内容 */
+.focus-first-time-dialog .dialog-content,
+.focus-exit-dialog .dialog-content {
+  margin-bottom: 20px;
+}
+
+/* 表单组 */
+.dialog-form-group {
+  margin-bottom: 15px;
+}
+
+.dialog-form-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: #18191c;
+  font-size: 14px;
+}
+
+.dialog-form-group input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #e3e5e7;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: border-color 0.3s;
+}
+
+.dialog-form-group input:focus {
+  border-color: #00a1d6;
+  outline: none;
+}
+
+/* 按钮组 */
+.dialog-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.dialog-button {
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s;
+  border: none;
+}
+
+.dialog-button.primary {
+  background: #00a1d6;
+  color: #fff;
+}
+
+.dialog-button.primary:hover {
+  background: #0091c2;
+}
+
+.dialog-button.secondary {
+  background: #f4f4f5;
+  color: #18191c;
+}
+
+.dialog-button.secondary:hover {
+  background: #e3e5e7;
+}
+
+/* 消息样式 */
+.dialog-message {
+  font-size: 14px;
+  color: #18191c;
+  line-height: 1.5;
+  text-align: center;
+  margin: 10px 0;
+}
+
+.dialog-message.error {
+  color: #f25d8e;
+}
+
+/* 背景遮罩 */
+.dialog-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 9998;
+}
+
+/* 进度指示器 */
+.setup-progress {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.progress-step {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #e3e5e7;
+  margin: 0 4px;
+}
+
+.progress-step.active {
+  background: #00a1d6;
+}
+
+/* 响应式调整 */
+@media screen and (max-width: 480px) {
+  .focus-first-time-dialog,
+  .focus-exit-dialog {
+    min-width: 90%;
+    padding: 15px;
+  }
+  
+  .dialog-button {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+} 
