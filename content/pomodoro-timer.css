@@ -1,0 +1,649 @@
+/* pomodoro-timer.css - 番茄钟样式 */
+
+.pomodoro-timer {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  width: 280px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  z-index: 999999;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  transition: all 0.3s ease;
+}
+
+.pomodoro-timer.hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.9) translateY(-20px);
+}
+
+/* 头部 */
+.pomodoro-header {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 16px 16px 0 0;
+  cursor: grab;
+  user-select: none;
+}
+
+.pomodoro-header:active {
+  cursor: grabbing;
+}
+
+.pomodoro-icon {
+  font-size: 20px;
+  margin-right: 8px;
+}
+
+.pomodoro-mode-label {
+  flex: 1;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.pomodoro-close {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background 0.2s;
+}
+
+.pomodoro-close:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* 主体 */
+.pomodoro-body {
+  padding: 20px 16px 16px;
+}
+
+/* 时间显示 */
+.pomodoro-display {
+  text-align: center;
+  font-size: 48px;
+  font-weight: 700;
+  color: #667eea;
+  font-family: 'SF Mono', 'Monaco', 'Courier New', monospace;
+  letter-spacing: 2px;
+  margin-bottom: 16px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* 进度条 */
+.pomodoro-progress {
+  width: 100%;
+  height: 8px;
+  background: #e0e7ff;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.pomodoro-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  border-radius: 4px;
+  transition: width 1s linear;
+}
+
+/* 控制按钮 */
+.pomodoro-controls {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.pomodoro-btn {
+  flex: 1;
+  padding: 10px 12px;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  outline: none;
+}
+
+.pomodoro-start,
+.pomodoro-pause {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.pomodoro-start:hover,
+.pomodoro-pause:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.pomodoro-start:active,
+.pomodoro-pause:active {
+  transform: translateY(0);
+}
+
+.pomodoro-reset {
+  background: #f3f4f6;
+  color: #6b7280;
+  flex: 0.8;
+}
+
+.pomodoro-reset:hover {
+  background: #e5e7eb;
+}
+
+.pomodoro-mode {
+  background: #fff;
+  color: #667eea;
+  border: 2px solid #667eea;
+  flex: 1.2;
+}
+
+.pomodoro-mode:hover {
+  background: #f0f0ff;
+}
+
+/* 完成按钮样式 */
+.pomodoro-complete {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  font-weight: 600;
+  flex: 1;
+}
+
+.pomodoro-complete:hover {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.pomodoro-complete:active {
+  transform: translateY(0);
+}
+
+/* 工作状态下的按钮紧凑布局优化 */
+.pomodoro-timer.working .pomodoro-controls {
+  gap: 6px;
+}
+
+.pomodoro-timer.working .pomodoro-btn {
+  font-size: 12px;
+  padding: 9px 10px;
+}
+
+/* 统计和目标进度 */
+.pomodoro-stats {
+  text-align: center;
+  padding: 8px;
+  background: #f9fafb;
+  border-radius: 8px;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.pomodoro-stats .stats-text {
+  font-weight: 600;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.goal-progress {
+  width: 100%;
+  height: 6px;
+  background: #e5e7eb;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.goal-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+
+/* 动画 */
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+/* 工作模式 - 绿色 */
+.pomodoro-timer.working .pomodoro-display {
+  animation: pulse 2s infinite;
+  color: #10b981;
+}
+
+.pomodoro-timer.working .pomodoro-progress-bar {
+  background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+}
+
+/* 休息模式 - 橙色 */
+.pomodoro-timer.break .pomodoro-display {
+  animation: pulse 2s infinite;
+  color: #f59e0b;
+}
+
+.pomodoro-timer.break .pomodoro-progress-bar {
+  background: linear-gradient(90deg, #f59e0b 0%, #d97706 100%);
+}
+
+.pomodoro-timer.break .pomodoro-header {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
+
+.pomodoro-timer.break .pomodoro-pause {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
+
+/* 禁用状态 */
+.pomodoro-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pomodoro-btn:disabled:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+  .pomodoro-timer {
+    width: 240px;
+    right: 10px;
+    top: 60px;
+  }
+  
+  .pomodoro-display {
+    font-size: 36px;
+  }
+  
+  .pomodoro-btn {
+    font-size: 12px;
+    padding: 8px 10px;
+  }
+}
+
+/* 全屏模式下的样式调整 */
+body.fullscreen-mode .pomodoro-timer {
+  z-index: 2147483647;
+}
+
+/* 快捷键提示和设置区域 */
+.pomodoro-hint {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 12px;
+  margin-top: 8px;
+  background: #f3f4f6;
+  border-radius: 6px;
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.pomodoro-hint .hint-text {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  user-select: none;
+}
+
+.pomodoro-settings-btn {
+  background: none;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: all 0.2s;
+  line-height: 1;
+}
+
+.pomodoro-settings-btn:hover {
+  background: #e5e7eb;
+  transform: scale(1.1);
+}
+
+.pomodoro-settings-btn:active {
+  transform: scale(0.95);
+}
+
+/* 拖拽状态 - 悬浮效果 */
+.pomodoro-timer.dragging {
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  transform: scale(1.05);
+  opacity: 0.85;
+  cursor: grabbing !important;
+  transition: transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
+}
+
+.pomodoro-timer.dragging * {
+  cursor: grabbing !important;
+}
+
+.pomodoro-timer.dragging .pomodoro-header {
+  cursor: grabbing !important;
+}
+
+/* ===== 简洁模式 - 只显示计时器 ===== */
+.pomodoro-timer.minimal-mode {
+  width: 150px;  /* 固定宽度，避免拖动后宽度异常 */
+  padding: 8px 12px;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  cursor: grab;
+  user-select: none;
+}
+
+.pomodoro-timer.minimal-mode:active {
+  cursor: grabbing;
+}
+
+.pomodoro-timer.minimal-mode.dragging {
+  cursor: grabbing;
+}
+
+.pomodoro-timer.minimal-mode .pomodoro-header {
+  display: none;
+}
+
+.pomodoro-timer.minimal-mode .pomodoro-body {
+  padding: 0;
+}
+
+.pomodoro-timer.minimal-mode .pomodoro-display {
+  font-size: 36px;
+  margin-bottom: 0;
+  color: #fff;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  letter-spacing: 3px;
+  white-space: nowrap;  /* 防止时间文字换行 */
+  text-align: center;    /* 居中显示 */
+}
+
+.pomodoro-timer.minimal-mode .pomodoro-progress,
+.pomodoro-timer.minimal-mode .pomodoro-controls,
+.pomodoro-timer.minimal-mode .pomodoro-stats,
+.pomodoro-timer.minimal-mode .pomodoro-hint {
+  display: none;
+}
+
+/* 简洁模式 - 工作状态（绿色） */
+.pomodoro-timer.minimal-mode.working .pomodoro-display {
+  color: #10b981;
+}
+
+/* 简洁模式 - 休息状态（橙色背景+呼吸动画） */
+.pomodoro-timer.minimal-mode.break {
+  background: rgba(245, 158, 11, 0.85);
+  box-shadow: 0 0 20px rgba(245, 158, 11, 0.4);
+  animation: breathe 3s ease-in-out infinite;
+}
+
+.pomodoro-timer.minimal-mode.break .pomodoro-display {
+  color: #fff;
+  font-weight: 700;
+}
+
+/* 呼吸动画 */
+@keyframes breathe {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 20px rgba(245, 158, 11, 0.4);
+  }
+  50% {
+    transform: scale(1.02);
+    box-shadow: 0 0 30px rgba(245, 158, 11, 0.6);
+  }
+}
+
+/* 简洁模式 - 悬停提示 */
+.pomodoro-timer.minimal-mode::after {
+  content: 'Ctrl+Shift+T 隐藏计时器';
+  position: absolute;
+  bottom: -28px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.85);
+  color: white;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+  z-index: 1;
+}
+
+.pomodoro-timer.minimal-mode:hover::after {
+  opacity: 1;
+}
+
+/* 简洁模式 - 拖拽时隐藏提示 */
+.pomodoro-timer.minimal-mode.dragging::after {
+  display: none;
+}
+
+/* 页面内通知 - 不会导致退出全屏 */
+.pomodoro-notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  min-width: 280px;
+  max-width: 400px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 16px 20px;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.35);
+  z-index: 999999;
+  opacity: 0;
+  transform: translateY(-20px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+}
+
+.pomodoro-notification.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.pomodoro-notification .notification-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pomodoro-notification strong {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.pomodoro-notification p {
+  margin: 0;
+  font-size: 13px;
+  opacity: 0.95;
+}
+
+/* ===== 自定义对话框系统 - 不会导致退出全屏 ===== */
+.pomodoro-dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2147483647;
+  animation: pomodoroFadeIn 0.2s ease;
+}
+
+@keyframes pomodoroFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.pomodoro-dialog {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  width: 90%;
+  max-width: 400px;
+  overflow: hidden;
+  animation: pomodoroSlideUp 0.3s ease;
+}
+
+@keyframes pomodoroSlideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.pomodoro-dialog-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 20px;
+}
+
+.pomodoro-dialog-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.pomodoro-dialog-body {
+  padding: 24px;
+}
+
+.pomodoro-dialog-body p {
+  margin: 0 0 16px 0;
+  color: #374151;
+  line-height: 1.6;
+}
+
+.pomodoro-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.pomodoro-input:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.pomodoro-dialog-footer {
+  padding: 16px 24px;
+  background: #f9fafb;
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.pomodoro-dialog-btn {
+  padding: 10px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.pomodoro-dialog-btn.cancel {
+  background: #e5e7eb;
+  color: #6b7280;
+}
+
+.pomodoro-dialog-btn.cancel:hover {
+  background: #d1d5db;
+}
+
+.pomodoro-dialog-btn.confirm {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.pomodoro-dialog-btn.confirm:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+/* 错误状态对话框 */
+.pomodoro-dialog.error .pomodoro-dialog-header {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+}
+
+/* 成功状态对话框 */
+.pomodoro-dialog.success .pomodoro-dialog-header {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+/* 预设时长按钮 */
+.preset-btn {
+  flex: 1;
+  padding: 10px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  background: white;
+  color: #6b7280;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.preset-btn:hover {
+  border-color: #667eea;
+  color: #667eea;
+  background: #f0f0ff;
+}
+
+.preset-btn.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-color: #667eea;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+

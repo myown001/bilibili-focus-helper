@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
-  "name": "B站专注学习模式",
-  "version": "1.0.0",
+  "name": "B站专注学习助手",
+  "version": "1.1.5",
   "description": "为B站创建一个专注学习的环境，屏蔽干扰，提升学习效率",
   "permissions": [
     "storage",
@@ -13,7 +13,7 @@
   ],
   "action": {
     "default_popup": "popup/popup.html",
-    "default_title": "B站专注学习模式"
+    "default_title": "B站专注学习助手"
   },
   "background": {
     "service_worker": "background/background.js"
@@ -21,24 +21,31 @@
   "content_scripts": [
     {
       "matches": ["*://*.bilibili.com/*"],
-      "css": [
-        "content/focus-video.css",
-        "content/focus-first-time.css"
-      ],
       "js": [
         "content/utils.js",
+        "content/study-recorder.js",
+        "content/pomodoro-timer.js",
         "content/settings-manager.js",
-        "content/first-time-setup.js",
-        "content/exit-handler.js",
+        "content/focused-homepage.js",
         "content/focus-mode.js",
+        "content/exit-handler.js",    
+        "content/first-time-setup.js", 
         "content/focus-main.js"
+      ],
+      "css": [
+        "content/focus-video.css",
+        "content/pomodoro-timer.css",
+        "content/focus-first-time.css",
+        "content/focus-dialogs.css",
+        "content/exit-handler.css",
+        "content/focus-hide-distractions.css"
       ],
       "run_at": "document_end"
     }
   ],
   "web_accessible_resources": [
     {
-      "resources": ["lib/chart.js/dist/chart.umd.js", "popup/daily-stats.js", "popup/daily-stats.css"],
+      "resources": ["lib/chart.js/dist/chart.umd.js", "content/*"],
       "matches": ["*://*.bilibili.com/*"]
     }
   ]

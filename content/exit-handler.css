@@ -1,0 +1,761 @@
+/**
+ * 退出处理专用样式
+ * 设计理念：高端、简洁、科技感
+ * 从 exit-handler.js、focus-first-time.css、focus-video.css 整合优化而来
+ */
+
+/* ========== 退出弹窗基础样式 ========== */
+.focus-exit-dialog {
+  /* 依赖父元素的flexbox居中 */
+  position: relative;
+  background: var(--focus-dialog-bg, #ffffff);
+  border-radius: var(--focus-dialog-border-radius, 12px);
+  box-shadow: 
+    0 20px 60px rgba(0, 0, 0, 0.12),
+    0 8px 24px rgba(0, 0, 0, 0.08),
+    0 0 0 1px rgba(0, 0, 0, 0.04);
+  max-width: min(600px, 90vw);
+  width: auto;
+  min-width: 400px;
+  padding: 32px;
+  
+  /* 微妙的动画 */
+  animation: dialog-smooth-enter 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  
+  /* 高端质感 */
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* 响应式适配 */
+@media screen and (max-width: 768px) {
+  .focus-exit-dialog {
+    max-width: 95vw;
+    min-width: 320px;
+    padding: 24px;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .focus-exit-dialog {
+    max-width: 98vw;
+    min-width: 280px;
+    padding: 20px;
+  }
+}
+
+/* ========== 对话框标题 ========== */
+.focus-exit-dialog h3,
+.focus-exit-dialog .dialog-title {
+  font-size: 24px;
+  margin-bottom: 24px;
+  color: #1a1a1a;
+  text-align: center;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+  line-height: 1.3;
+}
+
+/* ========== 对话框内容 ========== */
+.focus-exit-dialog .dialog-content {
+  margin-bottom: 24px;
+  line-height: 1.6;
+  color: #444;
+}
+
+/* ========== 提醒内容样式（重新设计 - 突出强调） ========== */
+.focus-exit-dialog .dialog-message.reminder-content {
+  /* 基础布局 */
+  position: relative;
+  padding: 36px 40px;
+  margin: 28px 0;
+  min-height: 120px;
+  
+  /* 背景 - 更强的视觉层次 */
+  background: linear-gradient(135deg, #f0f7ff 0%, #e6f3ff 100%);
+  border: 2px solid #00a1d6;
+  border-radius: 12px;
+  
+  /* 文字样式 - 突出显示 */
+  font-size: 22px;
+  font-weight: 600;
+  color: #1a1a1a;
+  line-height: 1.8;
+  letter-spacing: 0.5px;
+  
+  /* 阴影效果 - 立体感 */
+  box-shadow: 
+    0 8px 24px rgba(0, 161, 214, 0.12),
+    0 2px 8px rgba(0, 0, 0, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  
+  /* 动画过渡 */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* 防止文本溢出 - 保持单词完整性 */
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+}
+
+/* 添加装饰引号 - 强调这是一句话 */
+.focus-exit-dialog .dialog-message.reminder-content::before {
+  content: '"';
+  position: absolute;
+  top: 12px;
+  left: 16px;
+  font-size: 48px;
+  font-weight: 700;
+  color: rgba(0, 161, 214, 0.15);
+  line-height: 1;
+  font-family: Georgia, serif;
+}
+
+.focus-exit-dialog .dialog-message.reminder-content::after {
+  content: '"';
+  position: absolute;
+  bottom: 12px;
+  right: 16px;
+  font-size: 48px;
+  font-weight: 700;
+  color: rgba(0, 161, 214, 0.15);
+  line-height: 1;
+  font-family: Georgia, serif;
+}
+
+/* Hover 效果 - 更强的反馈 */
+.focus-exit-dialog .dialog-message.reminder-content:hover {
+  transform: translateY(-2px) scale(1.01);
+  border-color: #0091c2;
+  box-shadow: 
+    0 12px 32px rgba(0, 161, 214, 0.18),
+    0 4px 12px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+/* ========== 不同字数的自适应处理 ========== */
+
+/* 短文本（≤15字）- 更大的字体 */
+.focus-exit-dialog .dialog-message.reminder-content.short-text {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 26px;
+  padding: 48px 40px;
+  min-height: 140px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+/* 中等文本（16-40字）- 标准样式，两端对齐 + 垂直居中 */
+.focus-exit-dialog .dialog-message.reminder-content.medium-text {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  font-size: 20px;
+  padding: 40px 45px;
+  min-height: 130px;
+  line-height: 2.2;
+  text-align: justify !important;
+  text-align-last: center !important;
+  word-spacing: 0.1em;
+  letter-spacing: 0.05em;
+}
+
+/* 长文本（41-80字）- 较小字体，增加行距，两端对齐 + 垂直居中 */
+.focus-exit-dialog .dialog-message.reminder-content.long-text {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  font-size: 18px;
+  padding: 35px 45px;
+  min-height: 160px;
+  line-height: 2.3;
+  text-align: justify !important;
+  text-align-last: center !important;
+  word-spacing: 0.1em;
+}
+
+/* 超长文本（>80字）- 最小字体，滚动支持，两端对齐 */
+.focus-exit-dialog .dialog-message.reminder-content.extra-long-text {
+  display: block !important;
+  font-size: 16px;
+  padding: 30px 40px;
+  max-height: 280px;
+  min-height: auto;
+  line-height: 2.4;
+  overflow-y: auto;
+  text-align: justify !important;
+  text-align-last: center !important;
+  word-spacing: 0.1em;
+  
+  /* 自定义滚动条 */
+  scrollbar-width: thin;
+  scrollbar-color: #00a1d6 #e8e8e8;
+}
+
+.focus-exit-dialog .dialog-message.reminder-content.extra-long-text::-webkit-scrollbar {
+  width: 6px;
+}
+
+.focus-exit-dialog .dialog-message.reminder-content.extra-long-text::-webkit-scrollbar-track {
+  background: #e8e8e8;
+  border-radius: 3px;
+}
+
+.focus-exit-dialog .dialog-message.reminder-content.extra-long-text::-webkit-scrollbar-thumb {
+  background: #00a1d6;
+  border-radius: 3px;
+}
+
+.focus-exit-dialog .dialog-message.reminder-content.extra-long-text::-webkit-scrollbar-thumb:hover {
+  background: #0091c2;
+}
+
+/* ========== 进度条相关（现代简洁） ========== */
+.focus-exit-dialog .reminder-progress {
+  margin: 24px 0 20px 0;
+}
+
+.focus-exit-dialog .progress-text {
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 10px;
+  text-align: right;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+}
+
+.focus-exit-dialog .progress-bar {
+  height: 4px;
+  background: #f0f0f0;
+  border-radius: 2px;
+  overflow: hidden;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.focus-exit-dialog .progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #00a1d6 0%, #0084b4 100%);
+  border-radius: 2px;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 3px rgba(0, 161, 214, 0.3);
+}
+
+/* ========== 按钮容器 ========== */
+.focus-exit-dialog .dialog-buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 28px;
+}
+
+/* ========== 按钮基础样式（高端简洁） ========== */
+.focus-exit-dialog .dialog-button {
+  flex: 1;
+  padding: 13px 28px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 600;
+  min-width: 120px;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  letter-spacing: 0.3px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 主按钮（科技蓝渐变） */
+.focus-exit-dialog .dialog-button.primary {
+  background: linear-gradient(135deg, #00a1d6 0%, #0084b4 100%);
+  color: white;
+  box-shadow: 
+    0 4px 12px rgba(0, 161, 214, 0.25),
+    0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+.focus-exit-dialog .dialog-button.primary:hover {
+  background: linear-gradient(135deg, #0091c2 0%, #0074a0 100%);
+  transform: translateY(-2px);
+  box-shadow: 
+    0 6px 20px rgba(0, 161, 214, 0.3),
+    0 3px 8px rgba(0, 0, 0, 0.12);
+}
+
+.focus-exit-dialog .dialog-button.primary:active {
+  transform: translateY(0);
+  box-shadow: 
+    0 2px 8px rgba(0, 161, 214, 0.25),
+    0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+/* 次要按钮（简洁灰色） */
+.focus-exit-dialog .dialog-button.secondary {
+  background: #f8f8f8;
+  color: #555;
+  border: 1px solid #e8e8e8;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+}
+
+.focus-exit-dialog .dialog-button.secondary:hover {
+  background: #f0f0f0;
+  border-color: #d8d8d8;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.focus-exit-dialog .dialog-button.secondary:active {
+  transform: translateY(0);
+  background: #e8e8e8;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+/* 按钮内 SVG 图标样式 */
+.focus-exit-dialog .dialog-button svg {
+  vertical-align: middle;
+}
+
+.focus-exit-dialog .dialog-button.secondary svg {
+  margin-right: 5px;
+}
+
+.focus-exit-dialog .dialog-button.primary svg {
+  margin-left: 5px;
+}
+
+/* ========== 退出进度对话框（科技感暗色） ========== */
+.exit-progress-dialog {
+  background: rgba(24, 24, 24, 0.96);
+  border-radius: 12px;
+  padding: 28px;
+  width: 420px;
+  max-width: 90%;
+  box-shadow: 
+    0 20px 60px rgba(0, 0, 0, 0.3),
+    0 8px 24px rgba(0, 0, 0, 0.2),
+    0 0 0 1px rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: #e8e8e8;
+}
+
+.exit-progress-dialog h3 {
+  color: #ffffff;
+  font-weight: 600;
+  margin-bottom: 20px;
+  font-size: 20px;
+  text-align: center;
+}
+
+/* 退出进度内容容器 */
+.exit-progress-content {
+  padding: 20px;
+  text-align: center;
+}
+
+/* 退出消息 */
+.exit-message {
+  margin-bottom: 20px;
+  font-size: 16px;
+  color: #e8e8e8;
+  line-height: 1.6;
+}
+
+/* 退出状态文本 */
+.exit-status {
+  font-size: 14px;
+  color: #cccccc;
+  margin-top: 12px;
+  letter-spacing: 0.3px;
+  transition: color 0.3s ease;
+}
+
+/* ========== 遮罩层 - 全屏对话框专用 ========== */
+.dialog-overlay.fullscreen-overlay {
+  /* z-index 由 JS 动态设置 */
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+/* ========== 退出过渡动画 ========== */
+.exit-transition-overlay {
+  /* 基础样式继承自 .focus-dialog-overlay */
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
+              visibility 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: opacity, visibility;
+}
+
+.exit-transition-overlay.focus-dialog-visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.exit-transition-content {
+  background-color: rgba(255, 255, 255, 0.98);
+  border-radius: 12px;
+  padding: 32px;
+  max-width: 420px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 
+    0 20px 60px rgba(0, 0, 0, 0.12),
+    0 8px 24px rgba(0, 0, 0, 0.08),
+    0 0 0 1px rgba(0, 0, 0, 0.04);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transform: translateY(0);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ========== 退出过渡动画内容样式 ========== */
+.exit-header h3 {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0 0 20px 0;
+  text-align: center;
+}
+
+.exit-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  background-color: rgba(0, 161, 214, 0.1);
+  border-radius: 50%;
+  margin: 0 auto 16px;
+  animation: icon-pulse 2s ease-in-out infinite;
+}
+
+@keyframes icon-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(0, 161, 214, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(0, 161, 214, 0);
+  }
+}
+
+.exit-icon svg {
+  color: #00a1d6;
+}
+
+.exit-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: #2c3e50;
+}
+
+.exit-description {
+  color: #666;
+  margin-bottom: 20px;
+  font-size: 14px;
+  line-height: 1.6;
+  background-color: #f8f9fa;
+  padding: 15px;
+  border-radius: 8px;
+}
+
+.exit-description p {
+  margin: 6px 0;
+}
+
+/* ========== 退出进度相关 ========== */
+.exit-progress-container {
+  margin: 10px 0 20px 0;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  padding: 0;
+}
+
+.exit-progress-bar {
+  height: 8px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 0;
+}
+
+.exit-progress-fill {
+  height: 100%;
+  width: 0;
+  background: linear-gradient(90deg, #00a1d6 0%, #00c4ff 100%);
+  transition: width 3s ease;
+  border-radius: 4px;
+  box-shadow: 0 0 12px rgba(0, 161, 214, 0.6);
+}
+
+.exit-progress-text {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.8);
+  margin-top: 12px;
+  letter-spacing: 0.3px;
+}
+
+/* 确认按钮容器 */
+.exit-confirm-button {
+  margin-top: 20px;
+}
+
+.confirm-btn {
+  background: linear-gradient(135deg, #00a1d6 0%, #0084b4 100%);
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 10px 28px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(0, 161, 214, 0.25);
+}
+
+.confirm-btn:hover {
+  background: linear-gradient(135deg, #0091c2 0%, #0074a0 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 161, 214, 0.35);
+}
+
+.confirm-btn:active {
+  transform: translateY(0) scale(0.98);
+  box-shadow: 0 2px 8px rgba(0, 161, 214, 0.25);
+}
+
+/* ========== 动画定义（平滑优雅） ========== */
+@keyframes dialog-smooth-enter {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ========== 表单组样式 ========== */
+.focus-exit-dialog .dialog-form-group {
+  margin-bottom: 20px;
+}
+
+.focus-exit-dialog .dialog-form-group label {
+  font-size: 16px;
+  margin-bottom: 10px;
+  display: block;
+  color: #333;
+  font-weight: 500;
+}
+
+/* ========== 输入框样式优化 ========== */
+.focus-exit-dialog input[type="password"],
+.focus-exit-dialog input[type="text"] {
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 15px;
+  border: 1.5px solid #e8e8e8;
+  border-radius: 8px;
+  background: #fafafa;
+  color: #333;
+  box-sizing: border-box;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: inherit;
+}
+
+.focus-exit-dialog input[type="password"]:focus,
+.focus-exit-dialog input[type="text"]:focus {
+  border-color: #00a1d6;
+  background: #ffffff;
+  box-shadow: 
+    0 0 0 3px rgba(0, 161, 214, 0.08),
+    0 2px 8px rgba(0, 161, 214, 0.12);
+  outline: none;
+}
+
+/* ========== 图标容器（科技感） ========== */
+.focus-exit-dialog .verify-icon,
+.focus-exit-dialog .dialog-icon {
+  text-align: center;
+  margin-bottom: 20px;
+  animation: icon-float 3s ease-in-out infinite;
+}
+
+@keyframes icon-float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+.focus-exit-dialog .verify-icon svg,
+.focus-exit-dialog .dialog-icon svg {
+  filter: drop-shadow(0 2px 8px rgba(0, 161, 214, 0.15));
+}
+
+/* ========== 提示信息样式 ========== */
+.focus-exit-dialog .dialog-note {
+  margin: 20px 0;
+  font-size: 13px;
+  color: #666;
+  background: #f8f8f8;
+  padding: 14px 16px;
+  border-radius: 8px;
+  line-height: 1.6;
+  border-left: 2px solid #d0d0d0;
+}
+
+.focus-exit-dialog .dialog-note svg {
+  vertical-align: middle;
+  margin-right: 5px;
+}
+
+.focus-exit-dialog .quick-return-tip {
+  margin: 20px 0;
+  text-align: center;
+  padding: 16px;
+  background: linear-gradient(135deg, rgba(0, 161, 214, 0.06) 0%, rgba(0, 161, 214, 0.03) 100%);
+  border-radius: 8px;
+  border: 1px solid rgba(0, 161, 214, 0.15);
+}
+
+.focus-exit-dialog .quick-return-tip span {
+  color: #00a1d6;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.focus-exit-dialog .quick-return-tip svg {
+  margin-right: 8px;
+}
+
+/* ========== 错误消息样式 ========== */
+.focus-exit-dialog .dialog-message.error {
+  color: #e74c3c;
+  background: rgba(231, 76, 60, 0.06);
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin: 16px 0;
+  font-size: 14px;
+  text-align: center;
+  border-left: 2px solid #e74c3c;
+  animation: error-shake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+}
+
+.focus-exit-dialog .dialog-message.error svg {
+  vertical-align: middle;
+  margin-right: 5px;
+}
+
+@keyframes error-shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-4px);
+  }
+  75% {
+    transform: translateX(4px);
+  }
+}
+
+/* ========== 响应式优化 ========== */
+@media screen and (max-width: 768px) {
+  .focus-exit-dialog h3 {
+    font-size: 20px;
+  }
+  
+  .focus-exit-dialog .dialog-message.reminder-content {
+    font-size: 18px;
+    padding: 28px 32px;
+  }
+  
+  .focus-exit-dialog .dialog-message.reminder-content.short-text {
+    font-size: 22px;
+  }
+  
+  .focus-exit-dialog .dialog-message.reminder-content.long-text {
+    font-size: 16px;
+  }
+  
+  .focus-exit-dialog .dialog-message.reminder-content::before,
+  .focus-exit-dialog .dialog-message.reminder-content::after {
+    font-size: 36px;
+  }
+  
+  .exit-progress-dialog {
+    padding: 24px;
+    width: 95%;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .focus-exit-dialog h3 {
+    font-size: 18px;
+  }
+  
+  .focus-exit-dialog .dialog-button {
+    padding: 12px 20px;
+    font-size: 14px;
+    min-width: 100px;
+  }
+  
+  .focus-exit-dialog .dialog-message.reminder-content {
+    font-size: 16px;
+    padding: 24px 28px;
+    min-height: 100px;
+  }
+  
+  .focus-exit-dialog .dialog-message.reminder-content.short-text {
+    font-size: 20px;
+  }
+  
+  .focus-exit-dialog .dialog-message.reminder-content::before,
+  .focus-exit-dialog .dialog-message.reminder-content::after {
+    font-size: 28px;
+    top: 8px;
+    left: 12px;
+  }
+}
+
+/* ========== 禁用状态 ========== */
+.focus-exit-dialog .dialog-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* ========== 加载状态 ========== */
+.focus-exit-dialog .dialog-button.loading {
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+.focus-exit-dialog .dialog-button.loading::after {
+  content: '';
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  top: 50%;
+  left: 50%;
+  margin: -7px 0 0 -7px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: button-spin 0.6s linear infinite;
+}
+
+@keyframes button-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+

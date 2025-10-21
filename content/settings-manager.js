@@ -11,7 +11,18 @@ class FocusSettingsManager {
     password: '',
     reminderCount: 3,
     reminders: [],
-    isFirstTime: true
+    isFirstTime: true,
+    // 添加自动全屏相关设置
+    autoActivate: true,
+    forceFullscreen: true,
+    filterDanmaku: true,
+    allowExitFullscreen: false,
+    hideComments: false,
+    hideRecommendations: false,
+    hideSidebar: false,
+    hideHeader: false,
+    darkMode: false,
+    reminderInterval: 20
   };
   
   constructor() {
@@ -43,14 +54,28 @@ class FocusSettingsManager {
     try {
       const settings = await StorageUtils.load(FocusSettingsManager.STORAGE_KEY, FocusSettingsManager.DEFAULT_SETTINGS);
       console.log('[专注模式] 成功加载设置');
-      return settings;
+      
+      // 确保返回的设置包含所有默认值
+      return {
+        ...FocusSettingsManager.DEFAULT_SETTINGS,
+        ...settings,
+        // 强制检查isFirstTime字段，如果不存在则使用默认值
+        isFirstTime: settings?.isFirstTime !== undefined ? settings.isFirstTime : FocusSettingsManager.DEFAULT_SETTINGS.isFirstTime
+      };
     } catch (err) {
       console.error('[专注模式] 加载设置失败:', err);
       // 尝试从localStorage加载备份
       try {
         const backup = localStorage.getItem(`${FocusSettingsManager.STORAGE_KEY}_backup`);
         if (backup) {
-          return JSON.parse(backup);
+          const parsedBackup = JSON.parse(backup);
+          // 确保备份数据也包含所有默认值
+          return {
+            ...FocusSettingsManager.DEFAULT_SETTINGS,
+            ...parsedBackup,
+            // 强制检查isFirstTime字段
+            isFirstTime: parsedBackup?.isFirstTime !== undefined ? parsedBackup.isFirstTime : FocusSettingsManager.DEFAULT_SETTINGS.isFirstTime
+          };
         }
       } catch (localErr) {
         console.warn('[专注模式] 从localStorage加载备份失败:', localErr);
@@ -118,6 +143,32 @@ class FocusSettingsManager {
   }
   
   /**
+   * 更新密码
+   * @param {string} newPassword - 新密码
+   */
+  async updatePassword(newPassword) {
+    if (!this.initialized) {
+      await this.initialize();
+    }
+    
+    try {
+      this.settings.password = newPassword;
+      const result = await FocusSettingsManager.saveSettings(this.settings);
+      
+      if (result) {
+        console.log('[专注模式] 密码已更新');
+      } else {
+        console.error('[专注模式] 更新密码失败');
+      }
+      
+      return result;
+    } catch (err) {
+      console.error('[专注模式] 更新密码时出错:', err);
+      return false;
+    }
+  }
+  
+  /**
    * 获取提醒语
    */
   async getReminders() {
@@ -126,7 +177,53 @@ class FocusSettingsManager {
     }
     return [...this.settings.reminders];
   }
+  
+  /**
+   * 更新提醒语
+   * @param {string[]} reminders - 新的提醒语数组
+   * @returns {Promise<boolean>} 是否更新成功
+   */
+  async updateReminders(reminders) {
+    if (!this.initialized) {
+      await this.initialize();
+    }
+    
+    try {
+      // 确保提醒语是数组
+      if (!Array.isArray(reminders)) {
+        reminders = [reminders];
+      }
+      
+      // 过滤空字符串
+      reminders = reminders.filter(r => r && r.trim() !== '');
+      
+      // 如果没有有效的提醒语，使用默认提醒语
+      if (reminders.length === 0) {
+        reminders = ['请专注学习，不要分心', '坚持才能成功', '学习需要专注'];
+      }
+      
+      // 更新设置
+      this.settings.reminders = reminders;
+      this.settings.reminderCount = reminders.length;
+      
+      // 保存设置
+      const result = await FocusSettingsManager.saveSettings(this.settings);
+      
+      if (result) {
+        console.log('[专注模式] 提醒语已更新:', reminders);
+      } else {
+        console.error('[专注模式] 更新提醒语失败');
+      }
+      
+      return result;
+    } catch (err) {
+      console.error('[专注模式] 更新提醒语时出错:', err);
+      return false;
+    }
+  }
 }
 
 // 导出全局变量
-if (typeof window !== 'undefined' && typeof FocusSettingsManager !== 'undefined' && !window.FocusSettingsManager) window.FocusSettingsManager = FocusSettingsManager; 
+if (typeof window !== 'undefined' && typeof FocusSettingsManager !== 'undefined' && !window.FocusSettingsManager) {
+  window.FocusSettingsManager = FocusSettingsManager;
+} 

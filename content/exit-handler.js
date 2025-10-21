@@ -20,9 +20,6 @@ class ExitHandler {
     this.reminderBackground = null;
     // 退出过渡状态
     this.exitTransitionActive = false;
-    
-    // 初始化样式系统
-    this.initializeStyles();
   }
   
   // 使用独立的对话框样式类名
@@ -30,443 +27,86 @@ class ExitHandler {
   
   // 定义统一的 z-index 层级系统
   static Z_LAYERS = {
-    BASE: 10,            // 基础层级
-    OVERLAY: 30,         // 遮罩层
-    DIALOG: 40,          // 对话框
-    CRITICAL: 50,        // 关键操作对话框
-    HIGHEST: 60          // 最高层级（用于特殊情况）
+    BASE: 50,             // 基础层级
+    OVERLAY: 100,         // 遮罩层
+    DIALOG: 200,          // 对话框
+    CRITICAL: 300,        // 关键操作对话框
+    HIGHEST: 400          // 最高层级（用于特殊情况）
   };
   
   /**
-   * 初始化所有样式，集中管理样式定义
+   * 初始化样式 - CSS 已移至 exit-handler.css
+   * 此方法已废弃，保留是为了向后兼容
    */
   initializeStyles() {
-    const styleId = 'exit-handler-styles';
-    // 避免重复添加样式
-    if (document.getElementById(styleId)) return;
-    
-    const styleEl = document.createElement('style');
-    styleEl.id = styleId;
-    styleEl.textContent = `
-      /* CSS 变量定义 - 主题颜色和样式 */
-      :root {
-        --focus-primary: #00a1d6;
-        --focus-primary-hover: #0092c3;
-        --focus-secondary: #f0f9ff;
-        --focus-text: #333333;
-        --focus-text-light: #666666;
-        --focus-text-lighter: #cccccc;
-        --focus-bg: #ffffff;
-        --focus-bg-secondary: #f0f0f0;
-        --focus-border: rgba(255, 255, 255, 0.1);
-        --focus-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        --focus-radius: 8px;
-        --focus-radius-sm: 4px;
-        --focus-transition: 0.3s ease;
-      }
-      
-      /* 对话框基础样式 */
-      .focus-exit-dialog {
-        z-index: ${ExitHandler.Z_LAYERS.DIALOG};
-        box-shadow: var(--focus-shadow);
-        animation: dialog-fade-in 0.3s ease;
-        border-radius: var(--focus-radius);
-        border: 1px solid var(--focus-border);
-        background: var(--focus-bg);
-        padding: 20px;
-        max-width: 450px;
-        width: 90%;
-        position: relative;
-        margin: 0 auto;
-      }
-      
-      /* 对话框标题 */
-      .focus-exit-dialog h3 {
-        font-size: 20px;
-        margin-bottom: 15px;
-        color: var(--focus-primary);
-        text-align: center;
-        font-weight: bold;
-      }
-      
-      /* 提醒内容样式 */
-      .focus-exit-dialog .dialog-message.reminder-content {
-        font-size: 18px;
-        padding: 20px;
-        margin: 15px 0;
-        background: var(--focus-secondary);
-        border-left: 4px solid var(--focus-primary);
-        border-radius: var(--focus-radius-sm);
-        color: var(--focus-text);
-        line-height: 1.6;
-      }
-      
-      /* 进度条容器 */
-      .focus-exit-dialog .reminder-progress {
-        margin: 15px 0;
-      }
-      
-      /* 进度文本 */
-      .focus-exit-dialog .progress-text {
-        font-size: 14px;
-        color: var(--focus-text-light);
-        margin-bottom: 5px;
-        text-align: right;
-      }
-      
-      /* 进度条背景 */
-      .focus-exit-dialog .progress-bar {
-        height: 4px;
-        background: #eee;
-        border-radius: 2px;
-        overflow: hidden;
-      }
-      
-      /* 进度条填充 */
-      .focus-exit-dialog .progress-fill {
-        height: 100%;
-        background: var(--focus-primary);
-        border-radius: 2px;
-        transition: width 0.3s ease-out;
-      }
-      
-      /* 按钮容器 */
-      .focus-exit-dialog .dialog-buttons {
-        display: flex;
-        justify-content: space-between;
-        margin-top: 20px;
-      }
-      
-      /* 按钮基础样式 */
-      .focus-exit-dialog .dialog-button {
-        padding: 8px 20px;
-        border-radius: 20px;
-        border: none;
-        cursor: pointer;
-        font-size: 14px;
-        font-weight: 500;
-        min-width: 100px;
-        transition: all 0.2s ease;
-      }
-      
-      /* 主按钮 */
-      .focus-exit-dialog .dialog-button.primary {
-        background: var(--focus-primary);
-        color: white;
-      }
-      
-      .focus-exit-dialog .dialog-button.primary:hover {
-        background: var(--focus-primary-hover);
-      }
-      
-      /* 次要按钮 */
-      .focus-exit-dialog .dialog-button.secondary {
-        background: var(--focus-bg-secondary);
-        color: var(--focus-text-light);
-      }
-      
-      .focus-exit-dialog .dialog-button.secondary:hover {
-        background: #e0e0e0;
-      }
-      
-      /* 遮罩层 - 使用较低的透明度允许底层内容可见 */
-      .dialog-overlay.fullscreen-overlay {
-        z-index: ${ExitHandler.Z_LAYERS.OVERLAY};
-        background: rgba(0, 0, 0, 0.3);
-        backdrop-filter: blur(2px);
-      }
-      
-      /* 顶层遮罩 - 使用较低的透明度允许底层内容可见 */
-      .top-level-exit-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.5);
-        z-index: ${ExitHandler.Z_LAYERS.CRITICAL};
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        backdrop-filter: blur(3px);
-      }
-      
-      /* 局部覆盖层 - 只覆盖部分屏幕 */
-      .partial-exit-overlay {
-        position: fixed;
-        background: rgba(0, 0, 0, 0.5);
-        z-index: ${ExitHandler.Z_LAYERS.OVERLAY};
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        backdrop-filter: blur(3px);
-        border-radius: var(--focus-radius);
-      }
-      
-      /* 退出进度对话框 */
-      .exit-progress-dialog {
-        background: rgba(18, 18, 18, 0.85);
-        border-radius: var(--focus-radius);
-        padding: 20px;
-        width: 400px;
-        max-width: 90%;
-        box-shadow: var(--focus-shadow);
-        border: 1px solid var(--focus-border);
-      }
-      
-      /* 对话框淡入动画 */
-      @keyframes dialog-fade-in {
-        from {
-          opacity: 0;
-          transform: translateY(10px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-      
-      /* 退出过渡样式 */
-      .exit-transition-overlay {
-        position: fixed;
-        top: 20%;
-        left: 50%;
-        transform: translateX(-50%);
-        width: auto;
-        max-width: 90%;
-        background-color: rgba(0, 0, 0, 0.5);
-        z-index: ${ExitHandler.Z_LAYERS.OVERLAY};
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        opacity: 0;
-        visibility: hidden;
-        transition: opacity 0.5s ease, visibility 0.5s ease;
-        will-change: opacity, visibility;
-        border-radius: var(--focus-radius);
-        padding: 10px;
-      }
-      
-      .exit-transition-overlay.visible {
-        opacity: 1;
-        visibility: visible;
-      }
-      
-      .exit-transition-content {
-        background-color: var(--focus-bg);
-        border-radius: var(--focus-radius);
-        padding: 24px;
-        max-width: 400px;
-        width: 100%;
-        text-align: center;
-        box-shadow: var(--focus-shadow);
-        transform: translateY(20px);
-        opacity: 0;
-        transition: transform 0.3s ease, opacity 0.3s ease;
-        will-change: transform, opacity;
-      }
-      
-      .exit-transition-overlay.visible .exit-transition-content {
-        transform: translateY(0);
-        opacity: 1;
-      }
-      
-      .exit-transition-overlay.fade-out {
-        opacity: 0;
-      }
-      
-      .exit-transition-overlay.fade-out .exit-transition-content {
-        transform: translateY(10px);
-        opacity: 0;
-      }
-      
-      /* 退出图标 */
-      .exit-icon {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 60px;
-        height: 60px;
-        background-color: var(--focus-secondary);
-        border-radius: 50%;
-        margin: 0 auto 16px;
-      }
-      
-      .exit-icon svg {
-        color: var(--focus-primary);
-      }
-      
-      /* 退出标题 */
-      .exit-title {
-        font-size: 18px;
-        font-weight: bold;
-        margin-bottom: 16px;
-        color: var(--focus-text);
-      }
-      
-      /* 退出描述 */
-      .exit-description {
-        color: var(--focus-text-light);
-        margin-bottom: 20px;
-        font-size: 14px;
-        line-height: 1.5;
-        background-color: #f8f9fa;
-        padding: 15px;
-        border-radius: var(--focus-radius-sm);
-      }
-      
-      .exit-description p {
-        margin: 6px 0;
-      }
-      
-      /* 退出进度条 */
-      .exit-progress-bar {
-        height: 4px;
-        background-color: #eee;
-        border-radius: 2px;
-        overflow: hidden;
-        margin: 20px 0;
-      }
-      
-      .exit-progress-fill {
-        height: 100%;
-        width: 0;
-        background-color: var(--focus-primary);
-        transition: width 4s linear;
-      }
-      
-      /* 确认按钮 */
-      .exit-confirm-button {
-        margin-top: 20px;
-      }
-      
-      .confirm-btn {
-        background-color: var(--focus-primary);
-        color: white;
-        border: none;
-        border-radius: 20px;
-        padding: 8px 24px;
-        font-size: 14px;
-        font-weight: bold;
-        cursor: pointer;
-        transition: background-color 0.2s ease;
-      }
-      
-      .confirm-btn:hover {
-        background-color: var(--focus-primary-hover);
-      }
-      
-      .confirm-btn:active {
-        transform: scale(0.98);
-      }
-      
-      /* 事件透传样式 */
-      .event-passthrough {
-        pointer-events: none;
-      }
-      
-      .event-passthrough .focus-exit-dialog,
-      .event-passthrough .confirm-btn,
-      .event-passthrough .dialog-button {
-        pointer-events: auto;
-      }
-    `;
-    
-    document.head.appendChild(styleEl);
+    // ✅ CSS 样式已完全移至 content/exit-handler.css
+    // 不再需要在 JavaScript 中嵌入样式，遵循样式与逻辑分离原则
+    // 保留此空方法是为了向后兼容，避免其他代码调用时出错
   }
   
   /**
-   * 动态计算最佳的 z-index 值，避免覆盖重要的 B 站原生控件
-   * @param {string} type - z-index 类型 ('base', 'overlay', 'dialog', 'critical', 'highest')
-   * @returns {number} 计算得到的最佳 z-index 值
+   * 动态计算最佳的 z-index 值
+   * @param {string} type - z-index 类型 ('overlay', 'dialog', 'critical')
+   * @returns {number} 计算得到的 z-index 值
    */
   calculateOptimalZIndex(type = 'dialog') {
     try {
-      // 基础值映射
-      const baseValues = {
-        base: ExitHandler.Z_LAYERS.BASE,
-        overlay: ExitHandler.Z_LAYERS.OVERLAY,
-        dialog: ExitHandler.Z_LAYERS.DIALOG,
-        critical: ExitHandler.Z_LAYERS.CRITICAL,
-        highest: ExitHandler.Z_LAYERS.HIGHEST
-      };
-      
-      // 获取基础值
-      let baseValue = baseValues[type] || ExitHandler.Z_LAYERS.BASE;
-      
-      // 检查页面上的元素 z-index
-      const elementsToCheck = [
-        // B站播放器控件
-        '.bilibili-player-video-control',
-        '.bpx-player-control-wrap',
-        // 顶部导航栏
-        '#biliMainHeader',
-        '.bili-header',
-        // 弹幕相关
-        '.bilibili-player-video-danmaku',
-        '.bpx-player-danmaku',
-        // 对话框和弹出层
-        '.bili-dialog',
-        '.bili-modal',
-        '.bili-popover',
-        // 全屏控件
-        '.bilibili-player-video-btn-fullscreen',
-        '.bpx-player-ctrl-btn-fullscreen'
-      ];
-      
-      // 收集页面上元素的 z-index 值
+      // 获取页面上所有元素
+      const allElements = document.querySelectorAll('*');
       let maxZIndex = 0;
-      elementsToCheck.forEach(selector => {
-        const elements = document.querySelectorAll(selector);
-        elements.forEach(el => {
-          if (el) {
-            const style = window.getComputedStyle(el);
-            const zIndex = parseInt(style.zIndex);
-            if (!isNaN(zIndex) && zIndex > maxZIndex) {
-              maxZIndex = zIndex;
-            }
-          }
-        });
+      
+      // 遍历所有元素，找出最大的 z-index 值
+      allElements.forEach(el => {
+        const style = window.getComputedStyle(el);
+        const zIndex = parseInt(style.zIndex, 10);
+        if (!isNaN(zIndex) && zIndex > maxZIndex) {
+          maxZIndex = zIndex;
+        }
       });
       
-      // 如果找到了较高的 z-index 值，确保我们的值适当地高于或低于它
-      if (maxZIndex > 0) {
-        console.log(`[专注模式] 检测到页面最高 z-index: ${maxZIndex}`);
-        
-        // 根据类型确定相对位置
-        switch (type) {
-          case 'critical':
-          case 'highest':
-            // 关键层级应该高于检测到的最大值
-            return maxZIndex + 5;
-          case 'dialog':
-            // 对话框层级应该适当高于检测到的最大值
-            return maxZIndex + 3;
-          case 'overlay':
-            // 遮罩层应该略高于检测到的最大值
-            return maxZIndex + 2;
-          case 'base':
-          default:
-            // 基础层级应该略高于检测到的最大值
-            return maxZIndex + 1;
-        }
+      // 使用更保守的B站UI z-index基础值
+      const bilibiliUIZindex = 1000; // 降低基础值，避免覆盖B站控件
+      
+      // 获取播放器控件的z-index，确保我们的UI不会覆盖它们
+      let playerControlZIndex = 0;
+      const playerControls = document.querySelector('.bpx-player-control-wrap, .bilibili-player-video-control-wrap');
+      if (playerControls) {
+        const controlStyle = window.getComputedStyle(playerControls);
+        playerControlZIndex = parseInt(controlStyle.zIndex, 10) || 0;
+        console.log('[专注模式] 检测到播放器控件z-index:', playerControlZIndex);
       }
       
-      // 如果没有检测到较高的 z-index，使用我们的基础值
-      return baseValue;
+      // 特别处理视频页面，确保不干扰播放器控件
+      const isVideoPage = document.querySelector('.bpx-player-container, #bilibili-player');
+      
+      // 根据类型返回合适的 z-index 值
+      switch (type.toLowerCase()) {
+        case 'overlay':
+          // 遮罩层 z-index - 视频页面时避免覆盖播放器控件
+          return isVideoPage 
+            ? Math.max(maxZIndex + 50, ExitHandler.Z_LAYERS.OVERLAY)
+            : Math.max(maxZIndex + 100, bilibiliUIZindex, ExitHandler.Z_LAYERS.OVERLAY);
+        case 'critical':
+          // 关键对话框 z-index - 保持较高但更合理的值
+          return Math.max(maxZIndex + 150, bilibiliUIZindex + 50, ExitHandler.Z_LAYERS.CRITICAL);
+        case 'highest':
+          // 最高优先级 z-index
+          return Math.max(maxZIndex + 200, bilibiliUIZindex + 100, ExitHandler.Z_LAYERS.HIGHEST);
+        case 'dialog':
+        default:
+          // 普通对话框 z-index
+          return Math.max(maxZIndex + 100, bilibiliUIZindex + 30, ExitHandler.Z_LAYERS.DIALOG);
+      }
     } catch (err) {
-      console.error('[专注模式] 计算最佳 z-index 失败:', err);
-      // 出错时返回默认值
-      const fallbackValues = {
-        base: 10,
-        overlay: 30,
-        dialog: 40,
-        critical: 50,
-        highest: 60
-      };
-      return fallbackValues[type] || 40;
+      console.error('[专注模式] 计算 z-index 失败:', err);
+      // 发生错误时返回默认值，使用更合理的值
+      switch (type.toLowerCase()) {
+        case 'overlay': return 900;
+        case 'critical': return 1100;
+        case 'highest': return 1200;
+        case 'dialog':
+        default: return 1000;
+      }
     }
   }
   
@@ -613,6 +253,36 @@ class ExitHandler {
   }
   
   /**
+   * 统一设置退出状态标记
+   * @param {boolean} approved - 退出是否被批准
+   * @param {boolean} inProgress - 退出是否正在进行中
+   * @returns {boolean} 是否成功设置状态
+   */
+  setExitStates(approved, inProgress) {
+    try {
+      if (!window.focusMode || !window.focusMode.fullscreenState) {
+        console.warn('[专注模式] 无法设置退出状态：focusMode或fullscreenState不存在');
+        return false;
+      }
+      
+      console.log(`[专注模式] 设置退出状态: approved=${approved}, inProgress=${inProgress}`);
+      window.focusMode.fullscreenState.exitApproved = approved;
+      window.focusMode.fullscreenState.exitInProgress = inProgress;
+      
+      // 如果状态为false，确保重置相关计时器
+      if (!approved && !inProgress) {
+        window.focusMode.fullscreenState.deactivateStartTime = 0;
+        window.focusMode.fullscreenState.lastExitAttempt = 0;
+      }
+      
+      return true;
+    } catch (err) {
+      console.error('[专注模式] 设置退出状态失败:', err);
+      return false;
+    }
+  }
+  
+  /**
    * 处理退出流程
    * @returns {Promise<boolean>} 退出是否被批准
    */
@@ -633,154 +303,66 @@ class ExitHandler {
         return false;
       }
       
-      // 标记正在处理退出请求
       this.exitRequested = true;
       console.log('[专注模式] 开始处理退出请求');
       
-      // 获取退出密码设置
-      const needPassword = await this.settingsManager.getSetting('exitPasswordEnabled');
+      // 确保设置管理器已初始化
+      await this.settingsManager.initialize();
       
-      // 如果设置了退出密码，显示密码验证对话框
-      if (needPassword) {
-        console.log('[专注模式] 需要密码验证才能退出');
-        const passwordVerified = await this.showPasswordVerification();
-        
-        // 重置退出请求标记
+      // 获取设置
+      const settings = await this.settingsManager.getSettings();
+      
+      // 检查密码设置是否有效
+      if (!settings.password || settings.password.trim() === '') {
+        console.log('[专注模式] 未设置密码，允许直接退出');
         this.exitRequested = false;
-        
-        if (!passwordVerified) {
-          console.log('[专注模式] 密码验证失败，拒绝退出');
-          return false;
-        }
-        
-        console.log('[专注模式] 密码验证成功，允许退出');
         return true;
-      } else {
-        // 没有设置退出密码，显示确认对话框
-        console.log('[专注模式] 无需密码验证，显示退出确认');
-        
-        // 创建局部覆盖层
-        const overlay = this.createPartialOverlay({
-          width: 450,
-          height: 'auto',
-          position: 'player',
-          eventPassthrough: true
-        });
-        
-        // 创建确认对话框
-        const confirmDialog = document.createElement('div');
-        confirmDialog.className = 'focus-exit-dialog';
-        
-        // 设置对话框内容
-        confirmDialog.innerHTML = `
-          <h3 style="font-size: 20px; margin-bottom: 15px; color: var(--focus-primary); text-align: center; font-weight: bold;">退出确认</h3>
-          
-          <div class="dialog-message" style="font-size: 16px; margin: 20px 0; text-align: center; color: var(--focus-text);">
-            确定要退出专注模式吗？
-          </div>
-          
-          <div class="dialog-buttons" style="display: flex; justify-content: space-between; margin-top: 20px;">
-            <button id="cancel-exit-btn" class="dialog-button secondary" style="padding: 8px 20px; border-radius: 4px; border: 1px solid #ddd; background: #f4f4f4; color: #666; cursor: pointer; font-size: 14px;">继续学习</button>
-            <button id="confirm-exit-btn" class="dialog-button primary" style="padding: 8px 20px; border-radius: 4px; border: none; background: var(--focus-primary); color: white; cursor: pointer; font-size: 14px; font-weight: bold;">确认退出</button>
-          </div>
-        `;
-        
-        // 添加对话框到覆盖层
-        overlay.appendChild(confirmDialog);
-        
-        // 安全定位对话框，避免覆盖重要控件
-        this.positionDialogSafely(confirmDialog, overlay);
-        
-        // 设置ESC键处理
-        this.preventEscape(true);
-        
-        // 监测DOM变化，确保对话框不会被移除
-        const observer = this.monitorDOMChanges(confirmDialog, (wasRemoved, needsStyleFix) => {
-          if (wasRemoved || needsStyleFix) {
-            console.log('[专注模式] 退出确认对话框被干扰，尝试恢复');
-            this.recoverUIElement(overlay, confirmDialog);
-          }
-        });
-        
-        // 等待用户确认
-        return new Promise((resolve) => {
-          // 取消按钮点击事件
-          const cancelBtn = confirmDialog.querySelector('#cancel-exit-btn');
-          if (cancelBtn) {
-            cancelBtn.addEventListener('click', () => {
-              // 停止DOM监测
-              if (observer) observer.disconnect();
-              
-              // 移除覆盖层和对话框
-              if (overlay && overlay.parentNode) {
-                overlay.parentNode.removeChild(overlay);
-              }
-              
-              // 解除ESC键处理
-              this.preventEscape(false);
-              
-              // 重置退出请求标记
-              this.exitRequested = false;
-              
-              // 拒绝退出
-              resolve(false);
-            });
-          }
-          
-          // 确认按钮点击事件
-          const confirmBtn = confirmDialog.querySelector('#confirm-exit-btn');
-          if (confirmBtn) {
-            confirmBtn.addEventListener('click', async () => {
-              // 禁用按钮防止重复点击
-              confirmBtn.disabled = true;
-              
-              // 显示退出进度
-              try {
-                // 不移除覆盖层，而是在其中显示退出进度
-                await this.showExitProgress(overlay);
-                
-                // 停止DOM监测
-                if (observer) observer.disconnect();
-                
-                // 解除ESC键处理
-                this.preventEscape(false);
-                
-                // 重置退出请求标记
-                this.exitRequested = false;
-                
-                // 批准退出
-                resolve(true);
-              } catch (err) {
-                console.error('[专注模式] 退出进度显示失败:', err);
-                
-                // 移除覆盖层和对话框
-                if (overlay && overlay.parentNode) {
-                  overlay.parentNode.removeChild(overlay);
-                }
-                
-                // 解除ESC键处理
-                this.preventEscape(false);
-                
-                // 重置退出请求标记
-                this.exitRequested = false;
-                
-                // 出错时也允许退出
-                resolve(true);
-              }
-            });
-          }
-          
-          // 添加ESC键支持
-          confirmDialog.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-              e.preventDefault(); // 阻止默认行为
-              if (cancelBtn) cancelBtn.click(); // 模拟点击取消按钮
-            }
-          });
-        });
       }
+      
+      // 设置ESC按键阻止，防止用户通过ESC退出全屏
+      this.preventEscape(true);
+      
+      // 加强验证 - 检查提醒语是否有效并安全地获取用户设置的提醒语
+      let reminders = settings.reminders;
+      if (!Array.isArray(reminders) || reminders.length === 0) {
+        console.log('[专注模式] 未找到有效的提醒语，使用默认提醒语');
+        reminders = ['请专注学习，不要分心', '坚持才能成功', '学习需要专注'];
+      } else {
+        console.log('[专注模式] 成功加载用户设置的提醒语, 数量:', reminders.length);
+      }
+      
+      // 开始显示提醒语
+      this.currentReminderIndex = 0;
+      console.log('[专注模式] 开始显示提醒语');
+      const exitApproved = await this.showNextReminder(reminders);
+      
+      // 记录退出结果
+      console.log('[专注模式] 退出验证结果:', exitApproved ? '批准' : '拒绝');
+      
+      // 重置状态
+      this.exitRequested = false;
+      this.reminderDialogActive = false; // 确保对话框活动状态被重置
+      
+      // 如果退出被批准，设置状态标记并显示退出过渡
+      if (exitApproved) {
+        // 使用统一方法设置状态
+        this.setExitStates(true, true);
+        console.log('[专注模式] 在ExitHandler中设置全局退出状态标记');
+        
+        // 显示退出过渡提示
+        await this.showExitTransition();
+        
+        // ✅ 修复：删除重复调用 deactivate() 的代码
+        // deactivate() 将由 approveAndExit() 统一调用，避免重复执行
+        // 这样可以确保退出流程只执行一次，状态管理更清晰
+        console.log('[专注模式] 退出过渡完成，等待approveAndExit调用deactivate');
+      }
+      
+      return exitApproved;
     } catch (err) {
-      console.error('[专注模式] 处理退出请求失败:', err);
+      console.error('[专注模式] 退出处理失败:', err);
+      // 显示错误提示
+      this.showError('退出失败，请重试');
       this.exitRequested = false;
       return false;
     }
@@ -789,13 +371,12 @@ class ExitHandler {
   /**
    * 处理ESC键退出全屏的行为
    * 优化后的版本只在必要时拦截ESC键，减少对其他功能的干扰
-   * @param {boolean} enable - 是否启用ESC键处理
+   * @param {boolean} enable - 是否启用ESC键拦截
    */
   preventEscape(enable = true) {
     // 移除可能存在的监听器
     if (this.preventEscapeHandler) {
       document.removeEventListener('keydown', this.preventEscapeHandler, true);
-      document.removeEventListener('keydown', this.preventEscapeHandler, false);
       this.preventEscapeHandler = null;
     }
     
@@ -803,42 +384,41 @@ class ExitHandler {
     if (enable) {
       // 创建一个更智能的事件处理器
       this.preventEscapeHandler = (e) => {
-        // 只关注ESC键
+        // 只拦截ESC键
         if (e.key === 'Escape') {
           // 检查当前是否有对话框处于活动状态
           const hasActiveDialog = !!document.querySelector('.focus-exit-dialog') || 
-                                  !!document.querySelector('.top-level-exit-overlay') ||
-                                  !!document.querySelector('.partial-exit-overlay') ||
+                                  !!document.querySelector('.focus-dialog-overlay') ||
                                   this.reminderDialogActive;
           
           // 只有在有对话框活动时才阻止事件传播
           if (hasActiveDialog) {
-            // 仅在对话框活动时阻止默认行为
-            e.preventDefault();
-            console.log('[专注模式] 处理ESC键 (对话框活动中)');
-            return;
-          } 
-          
-          // 如果没有对话框活动，检查是否处于退出流程中
-          const isExitInProgress = window.focusMode && 
-                                   window.focusMode.fullscreenState && 
-                                   window.focusMode.fullscreenState.exitInProgress;
-          
-          if (isExitInProgress) {
-            // 如果正在退出，记录但不阻止事件
-            console.log('[专注模式] 检测到ESC键 (退出流程中)');
-            return;
+          e.preventDefault();
+          e.stopPropagation();
+            console.log('[专注模式] 阻止ESC键退出全屏 (对话框活动中)');
+          } else {
+            // 如果没有对话框活动，检查是否处于退出流程中
+            const isExitInProgress = window.focusMode && 
+                                     window.focusMode.fullscreenState && 
+                                     window.focusMode.fullscreenState.exitInProgress;
+            
+            if (isExitInProgress) {
+              // 如果正在退出，仍然阻止ESC键
+              e.preventDefault();
+              e.stopPropagation();
+              console.log('[专注模式] 阻止ESC键退出全屏 (退出流程中)');
+            } else {
+              // 否则，允许ESC键正常工作，但触发我们的退出流程
+              console.log('[专注模式] 检测到ESC键，触发退出流程');
+              // 不阻止默认行为，但开始我们的退出流程
+              this.handleExit();
+            }
           }
-          
-          // 否则，允许ESC键正常工作，但触发我们的退出流程
-          console.log('[专注模式] 检测到ESC键，触发退出流程');
-          // 不阻止默认行为，但开始我们的退出流程
-          setTimeout(() => this.handleExit(), 0);
         }
       };
       
-      // 使用冒泡阶段监听，不阻止事件传播
-      document.addEventListener('keydown', this.preventEscapeHandler, false);
+      // 使用捕获阶段监听，但不阻止事件继续传播
+      document.addEventListener('keydown', this.preventEscapeHandler, true);
     }
   }
   
@@ -862,7 +442,7 @@ class ExitHandler {
       
       // 确保清理现有对话框
       if (this.reminderBackground) {
-        UIUtils.closeDialog(this.reminderBackground);
+        this.closeDialog(this.reminderBackground);
         this.reminderDialog = null;
         this.reminderBackground = null;
       }
@@ -877,10 +457,27 @@ class ExitHandler {
     return new Promise((resolve) => {
       // 更新提示语内容和进度的函数
       const updateReminderContent = () => {
+        // 获取当前提示语
+        const currentReminder = reminders[this.currentReminderIndex];
+        
+        // 根据字数添加不同的CSS类
+        let textLengthClass = '';
+        const textLength = currentReminder.length;
+        
+        if (textLength <= 15) {
+          textLengthClass = 'short-text';
+        } else if (textLength <= 40) {
+          textLengthClass = 'medium-text';
+        } else if (textLength <= 80) {
+          textLengthClass = 'long-text';
+        } else {
+          textLengthClass = 'extra-long-text';
+        }
+        
         // 准备对话框内容
         const contentHtml = `
-          <div class="dialog-message reminder-content">
-            ${reminders[this.currentReminderIndex]}
+          <div class="dialog-message reminder-content ${textLengthClass}">
+            ${currentReminder}
           </div>
           <div class="reminder-progress">
             <div class="progress-text">提示 ${this.currentReminderIndex + 1}/${reminders.length}</div>
@@ -895,11 +492,17 @@ class ExitHandler {
       
       // 处理返回学习按钮点击
       const handleCancelClick = (e, dialog, background) => {
+        // 防止重复点击
+        if (e && e.target && e.target.disabled) return;
+        if (e && e.target) e.target.disabled = true;
+        
+        console.log('[专注模式] 用户选择返回学习');
+        
         // 关闭对话框前重置状态
         this.reminderDialogActive = false;
-        console.log('[专注模式] 用户选择返回学习，活动状态重置为：', this.reminderDialogActive);
+        console.log('[专注模式] 活动状态重置为：', this.reminderDialogActive);
         
-        UIUtils.closeDialog(background);
+        this.closeDialog(background);
         this.reminderDialog = null;
         this.reminderBackground = null;
         
@@ -910,12 +513,30 @@ class ExitHandler {
       
       // 处理确认按钮点击
       const handleConfirmClick = (e, dialog, background) => {
+        // 防止重复点击
+        if (e && e.target && e.target.disabled) return;
+        if (e && e.target) {
+          e.target.disabled = true;
+          const originalText = e.target.textContent;
+          e.target.textContent = '处理中...';
+          e.target.style.opacity = '0.7';
+          
+          // 延迟恢复按钮状态（如果需要）
+          setTimeout(() => {
+            if (e.target && e.target.parentNode) {
+              this.restoreButtonState(e.target, originalText);
+            }
+          }, 1000);
+        }
+        
+        console.log('[专注模式] 用户确认提示语，进入下一条');
+        
         // 增加索引
         this.currentReminderIndex++;
         
         if (this.currentReminderIndex >= reminders.length) {
           // 如果已经是最后一个提示语，关闭对话框并进入密码验证
-          UIUtils.closeDialog(background);
+          this.closeDialog(background);
           this.reminderDialog = null;
           this.reminderBackground = null;
           
@@ -933,11 +554,13 @@ class ExitHandler {
             contentContainer.style.transition = 'opacity 0.15s ease';
           
             // 等待淡出完成后更新内容并淡入
-          setTimeout(() => {
-              contentContainer.innerHTML = updateReminderContent();
-              // 强制回流
-              contentContainer.offsetHeight;
-              contentContainer.style.opacity = '1';
+            setTimeout(() => {
+              if (contentContainer.parentNode) { // 检查元素仍然存在
+                contentContainer.innerHTML = updateReminderContent();
+                // 强制回流
+                contentContainer.offsetHeight;
+                contentContainer.style.opacity = '1';
+              }
             }, 160);
           }
         }
@@ -958,60 +581,47 @@ class ExitHandler {
         const cancelButton = this.reminderDialog.querySelector('.dialog-button.secondary');
         
         if (confirmButton) {
+          // 🔧 修复：确保按钮可交互
+          this.ensureButtonInteractive(confirmButton);
           confirmButton.onclick = (e) => handleConfirmClick(e, this.reminderDialog, this.reminderBackground);
         }
         
         if (cancelButton) {
+          // 🔧 修复：确保按钮可交互
+          this.ensureButtonInteractive(cancelButton);
           cancelButton.onclick = (e) => handleCancelClick(e, this.reminderDialog, this.reminderBackground);
         }
       } else {
         // 创建新对话框
         console.log('[专注模式] 创建新的提示语对话框');
         
-        const { dialog, background } = UIUtils.createDialog({
-          title: 'Attention is all you need',
-          content: updateReminderContent(),
-          buttons: [
+        const { dialog, overlay } = this.createCenteredDialog(
+          'Attention is all you need',
+          updateReminderContent(),
+          [
             {
               text: '返回学习',
               type: 'secondary',
-              onClick: handleCancelClick
+              onClick: (e, dialog, background) => handleCancelClick(e, dialog, background)
             },
             {
               text: '确认',
               type: 'primary',
-              onClick: handleConfirmClick
+              onClick: (e, dialog, background) => handleConfirmClick(e, dialog, background)
             }
-          ],
-          className: ExitHandler.DIALOG_CLASS
-        });
+          ]
+        );
         
         // 保存对话框引用
         this.reminderDialog = dialog;
-        this.reminderBackground = background;
+        this.reminderBackground = overlay;
         
-        // 设置自定义样式，确保对话框在全屏模式下正确显示
-        this.ensureFullscreenDialogStyles();
-        
-        // 添加动画过渡样式
-        const style = document.createElement('style');
-        style.textContent = `
-          .reminder-update {
-            animation: reminder-pulse 0.3s ease;
-          }
-          
-          @keyframes reminder-pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.03); }
-            100% { transform: scale(1); }
-          }
-        `;
-        document.head.appendChild(style);
-        
-        // 添加自定义类以确保正确显示
-        if (background) {
-          background.classList.add('fullscreen-overlay');
-        }
+        // 🔧 修复：确保新创建的按钮可交互
+        setTimeout(() => {
+          const buttons = dialog.querySelectorAll('.dialog-button');
+          buttons.forEach(btn => this.ensureButtonInteractive(btn));
+          console.log('[专注模式] 已确保所有按钮可交互');
+        }, 50);
         
         // 阻止ESC键关闭对话框
         dialog.addEventListener('keydown', (e) => {
@@ -1042,59 +652,113 @@ class ExitHandler {
     // 确保样式已初始化
     this.ensureFullscreenDialogStyles();
     
-    // 验证密码的最大尝试次数
+    // 🔧 改进：密码尝试机制
     const maxPasswordAttempts = 3;
+    const cooldownTime = 30000; // 30秒冷却时间
     let passwordAttempts = 0;
     
+    // 检查是否在冷却期间
+    const lastFailTime = sessionStorage.getItem('focus_password_fail_time');
+    if (lastFailTime) {
+      const timeSinceLastFail = Date.now() - parseInt(lastFailTime);
+      if (timeSinceLastFail < cooldownTime) {
+        const remainingTime = Math.ceil((cooldownTime - timeSinceLastFail) / 1000);
+        this.showError(`密码验证失败次数过多，请等待 ${remainingTime} 秒后再试`);
+        return false;
+      } else {
+        // 冷却时间已过，清除记录
+        sessionStorage.removeItem('focus_password_fail_time');
+      }
+    }
+    
     return new Promise((resolve) => {
-      // 创建局部覆盖层，而非全屏覆盖
-      const overlay = this.createPartialOverlay({
-        width: 500,
-        height: 'auto',
-        position: 'player', // 尝试避开播放器控件
-        eventPassthrough: true
-      });
-      
+      // 创建顶层遮罩层，使用更适中的背景透明度
+      const topOverlay = document.createElement('div');
+      // ✅ 修复：使用正确的类名，并添加flexbox布局
+      topOverlay.className = 'focus-dialog-overlay';
+      // 使用动态计算的 z-index
+      const overlayZIndex = this.calculateOptimalZIndex('critical');
+      topOverlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0, 0, 0, 0.7);
+        z-index: ${overlayZIndex};
+      `;
+      document.body.appendChild(topOverlay);
+      topOverlay.classList.add('focus-dialog-visible');  // ✅ 正确的变量名
       // 创建密码验证对话框
       const passwordDialog = document.createElement('div');
       passwordDialog.className = 'focus-exit-dialog';
+      // ✅ 所有样式已移至 exit-handler.css，不再需要内联样式
       
-      // 设置对话框内容
+      // 设置对话框内容 - ✅ 所有样式已移至 exit-handler.css
       passwordDialog.innerHTML = `
-        <h3 style="font-size: 20px; margin-bottom: 20px; color: var(--focus-primary, #00a1d6); text-align: center; font-weight: bold;">验证密码</h3>
+        <h3>验证密码</h3>
         
-        <div class="verify-icon" style="text-align: center; margin-bottom: 15px;">
-          <div style="font-size: 40px; color: var(--focus-primary, #00a1d6); margin: 0 auto;">🔐</div>
-        </div>
+        <div class="verify-icon">
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M19 11H5C3.89543 11 3 11.8954 3 13V20C3 21.1046 3.89543 22 5 22H19C20.1046 22 21 21.1046 21 20V13C21 11.8954 20.1046 11 19 11Z" stroke="#00a1d6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M7 11V7C7 5.67392 7.52678 4.40215 8.46447 3.46447C9.40215 2.52678 10.6739 2 12 2C13.3261 2 14.5979 2.52678 15.5355 3.46447C16.4732 4.40215 17 5.67392 17 7V11" stroke="#00a1d6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="12" cy="16" r="1.5" fill="#00a1d6"/>
+          </svg>
+          </div>
         
         <div class="dialog-form-group">
-          <label style="font-size: 16px; margin-bottom: 8px; display: block; color: var(--focus-text, #333);">请输入密码以退出专注模式：</label>
-          <input type="password" id="password-input" required placeholder="输入您的密码" style="width: 100%; padding: 10px 12px; font-size: 16px; border: 1px solid #ddd; border-radius: 4px; background: white; color: var(--focus-text, #333); margin-top: 8px; box-sizing: border-box;">
-        </div>
+          <label>请输入密码以退出专注模式：</label>
+          <div>
+            <input type="password" id="password-input" required placeholder="输入您的密码">
+          </div>
+          </div>
         
-        <div id="password-error" class="dialog-message error" style="display: none; color: #f25d8e; margin-top: 10px; padding: 8px; background: rgba(242, 93, 142, 0.1); border-radius: 4px;">
-          密码错误，请重新输入（剩余尝试次数：<span id="attempts-left">${maxPasswordAttempts}</span>）
-        </div>
+        <div id="password-error" class="dialog-message error" style="display: none;">
+          <svg width="16" height="16" viewBox="0 0 24 24">
+            <path fill="#f25d8e" d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm-1-7v2h2v-2h-2zm0-8v6h2V7h-2z"/>
+          </svg>
+            密码错误，请重新输入（剩余尝试次数：<span id="attempts-left">${maxPasswordAttempts}</span>）
+          </div>
         
-        <div class="dialog-note" style="margin-top: 15px; font-size: 13px; color: var(--focus-text-light, #666);">
-          提示：输入正确的密码才能退出专注模式。点击"取消"即可快速返回全屏学习模式。
-        </div>
+        <div class="dialog-note">
+          <svg width="16" height="16" viewBox="0 0 24 24">
+            <path fill="#666" d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm-1-11v6h2v-6h-2zm0-4v2h2V7h-2z"/>
+          </svg>
+          提示：输入正确的密码才能退出专注模式。点击"返回学习"即可快速返回全屏学习模式。
+          </div>
         
-        <div class="quick-return-tip" style="margin-top: 10px; text-align: center; padding: 10px; background: rgba(0, 161, 214, 0.1); border-radius: 6px; border: 1px solid rgba(0, 161, 214, 0.3);">
-          <span style="color: var(--focus-primary, #00a1d6); font-weight: bold;">💡 快捷提示：</span> 点击"返回学习"立即恢复全屏专注模式
-        </div>
+        <div class="quick-return-tip">
+          <span>
+            <svg width="20" height="20" viewBox="0 0 24 24">
+              <path fill="#00a1d6" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15v-4h-3l4-7 4 7h-3v4h-2z"/>
+            </svg>
+            点击"返回学习"立即恢复全屏专注模式
+          </span>
+          </div>
         
-        <div class="dialog-buttons" style="display: flex; justify-content: space-between; margin-top: 20px;">
-          <button id="cancel-btn" class="dialog-button secondary" style="padding: 8px 20px; border-radius: 4px; border: 1px solid #ddd; background: #f4f4f4; color: #666; cursor: pointer; font-size: 14px;">返回学习</button>
-          <button id="confirm-password-btn" class="dialog-button primary" style="padding: 8px 20px; border-radius: 4px; border: none; background: var(--focus-primary, #00a1d6); color: white; cursor: pointer; font-size: 14px; font-weight: bold;">确认</button>
+        <div class="dialog-buttons">
+          <button id="cancel-btn" class="dialog-button secondary">
+            <svg width="16" height="16" viewBox="0 0 24 24">
+              <path fill="currentColor" d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+            </svg>
+            返回学习
+          </button>
+          <button id="confirm-password-btn" class="dialog-button primary">
+            确认
+            <svg width="16" height="16" viewBox="0 0 24 24">
+              <path fill="currentColor" d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/>
+            </svg>
+          </button>
         </div>
       `;
       
-      // 将对话框添加到覆盖层
-      overlay.appendChild(passwordDialog);
-      
-      // 安全定位对话框，避免覆盖重要控件
-      this.positionDialogSafely(passwordDialog, overlay);
+      // 将对话框添加到遮罩层
+      topOverlay.appendChild(passwordDialog);
       
       // 设置按钮事件处理
       const cancelBtn = passwordDialog.querySelector('#cancel-btn');
@@ -1103,23 +767,36 @@ class ExitHandler {
       const errorElement = passwordDialog.querySelector('#password-error');
       const attemptsLeftElement = passwordDialog.querySelector('#attempts-left');
       
+      // 🔧 修复：确保按钮可交互
+      if (cancelBtn) {
+        this.ensureButtonInteractive(cancelBtn);
+      }
+      if (confirmBtn) {
+        this.ensureButtonInteractive(confirmBtn);
+      }
+      
       // 取消按钮点击事件
       if (cancelBtn) {
         cancelBtn.addEventListener('click', () => {
-          // 移除覆盖层和对话框
-          if (overlay && overlay.parentNode) {
-            overlay.parentNode.removeChild(overlay);
-          }
-          this.preventEscape(false); // 取消时移除ESC拦截
-          resolve(false); // 不批准退出
+          // 移除遮罩层和对话框
+              if (topOverlay && topOverlay.parentNode) {
+                topOverlay.parentNode.removeChild(topOverlay);
+              }
+              this.preventEscape(false); // 取消时移除ESC拦截
+              resolve(false); // 不批准退出
         });
       }
       
       // 确认按钮点击事件
       if (confirmBtn) {
         confirmBtn.addEventListener('click', async () => {
-          // 禁用按钮防止重复点击
+          // 防止重复点击并提供视觉反馈
+          if (confirmBtn.disabled) return;
+          
           confirmBtn.disabled = true;
+          const originalText = confirmBtn.textContent;
+          confirmBtn.textContent = '验证中...';
+          confirmBtn.style.opacity = '0.7';
           
           try {
             const password = passwordInput.value;
@@ -1128,8 +805,8 @@ class ExitHandler {
             if (typeof this.settingsManager.validatePassword !== 'function') {
               console.error('[专注模式] 密码验证函数不可用');
               this.showError('系统错误，无法验证密码');
-              if (overlay && overlay.parentNode) {
-                overlay.parentNode.removeChild(overlay);
+              if (topOverlay && topOverlay.parentNode) {
+                topOverlay.parentNode.removeChild(topOverlay);
               }
               resolve(false);
               return;
@@ -1141,14 +818,17 @@ class ExitHandler {
             if (isValid) {
               console.log('[专注模式] 密码验证成功，显示退出准备界面');
               
-              // 不立即移除覆盖层，而是显示退出进度界面
-              this.showExitProgress(overlay).then(exitResult => {
+              // 🔧 改进：密码验证成功时清除冷却记录
+              sessionStorage.removeItem('focus_password_fail_time');
+              
+              // 不立即移除遮罩层，而是显示退出进度界面
+              this.showExitProgress(topOverlay).then(exitResult => {
                 // 退出进度完成后，通知外部处理
                 resolve(exitResult);
               }).catch(err => {
                 console.error('[专注模式] 退出进度显示错误:', err);
-                if (overlay && overlay.parentNode) {
-                  overlay.parentNode.removeChild(overlay);
+                if (topOverlay && topOverlay.parentNode) {
+                  topOverlay.parentNode.removeChild(topOverlay);
                 }
                 this.preventEscape(false);
                 resolve(false);
@@ -1167,41 +847,52 @@ class ExitHandler {
                 
                 // 3秒后隐藏错误消息
                 setTimeout(() => {
-                  if (errorElement.parentNode) {
+                  if (errorElement && errorElement.parentNode) {
                     errorElement.style.display = 'none';
                   }
                 }, 3000);
               }
               
-              // 如果达到最大尝试次数，关闭对话框并拒绝退出
+              // 如果达到最大尝试次数，启动冷却机制
               if (passwordAttempts >= maxPasswordAttempts) {
-                console.log('[专注模式] 密码尝试次数已达上限，拒绝退出');
-                if (overlay && overlay.parentNode) {
-                  overlay.parentNode.removeChild(overlay);
+                console.log('[专注模式] 密码尝试次数已达上限，启动冷却机制');
+                
+                // 记录失败时间，启动冷却
+                sessionStorage.setItem('focus_password_fail_time', Date.now().toString());
+                
+                if (topOverlay && topOverlay.parentNode) {
+                  topOverlay.parentNode.removeChild(topOverlay);
                 }
                 this.preventEscape(false);
                 resolve(false);
                 
-                // 显示超过尝试次数的提示
-                this.showError('密码尝试次数已达上限，请稍后再试');
+                // 显示冷却提示
+                this.showError('密码尝试次数已达上限，请等待30秒后再试');
                 return;
               }
               
-              // 清空密码输入
+              // 清空密码输入并聚焦
               passwordInput.value = '';
-              passwordInput.focus();
+              setTimeout(() => {
+                passwordInput.focus();
+              }, 100);
               
               // 恢复按钮状态
-              confirmBtn.disabled = false;
+              this.restoreButtonState(confirmBtn, originalText);
+              // 🔧 修复：确保按钮恢复后仍可交互
+              this.ensureButtonInteractive(confirmBtn);
             }
           } catch (err) {
             console.error('[专注模式] 密码验证失败:', err);
-            // 恢复按钮状态
-            if (confirmBtn) confirmBtn.disabled = false;
             
-            // 移除覆盖层
-            if (overlay && overlay.parentNode) {
-              overlay.parentNode.removeChild(overlay);
+            // 恢复按钮状态
+            this.restoreButtonState(confirmBtn, originalText);
+            // 🔧 修复：确保按钮恢复后仍可交互
+            this.ensureButtonInteractive(confirmBtn);
+            
+            // 移除遮罩层
+            if (topOverlay && topOverlay.parentNode) {
+              topOverlay.parentNode.removeChild(topOverlay);
             }
             
             resolve(false); // 验证过程出错，不批准退出
@@ -1222,13 +913,26 @@ class ExitHandler {
             confirmBtn.click();
           }
         } else if (e.key === 'Escape') {
-          // 阻止ESC键，但不传播
+          // 完全阻止ESC键
           e.preventDefault();
+          e.stopPropagation();
         }
       });
       
-      // 设置ESC键处理
+      // 设置ESC键阻止
       this.preventEscape(true);
+      
+      // 🔧 修复：延迟验证按钮交互性
+      setTimeout(() => {
+        if (cancelBtn && !this.verifyButtonInteractive(cancelBtn)) {
+          console.warn('[专注模式] 密码弹窗-取消按钮交互异常，尝试修复');
+          this.ensureButtonInteractive(cancelBtn);
+        }
+        if (confirmBtn && !this.verifyButtonInteractive(confirmBtn)) {
+          console.warn('[专注模式] 密码弹窗-确认按钮交互异常，尝试修复');
+          this.ensureButtonInteractive(confirmBtn);
+        }
+      }, 100);
       
       // 监测DOM变化，确保对话框不会被移除
       const observer = this.monitorDOMChanges(passwordDialog, (wasRemoved, needsStyleFix) => {
@@ -1239,10 +943,10 @@ class ExitHandler {
         } else if (needsStyleFix) {
           // 如果只是样式问题，修复样式
           console.log('[专注模式] 修复密码对话框样式');
-          this.recoverUIElement(overlay, passwordDialog, () => {
+          this.recoverUIElement(topOverlay, passwordDialog, () => {
             this.showPasswordVerification().then(resolve);
           });
-        }
+              }
       });
     });
   }
@@ -1258,39 +962,128 @@ class ExitHandler {
   }
   
   /**
-   * 显示错误提示
+   * 显示错误提示 - 美化版本
    */
   showError(message) {
-    // 确保样式已初始化
-    this.ensureFullscreenDialogStyles();
-    
-    const { dialog, background } = UIUtils.createDialog({
-      title: '错误',
-      content: `
-        <div class="dialog-message error">
+    // 使用新的居中对话框方法创建错误提示
+    const { dialog, overlay } = this.createCenteredDialog(
+      '⚠️ 提示',
+      `
+      <div class="error-dialog-container">
+        <div class="error-icon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="12" r="10" stroke="#ff4757" stroke-width="2" fill="none"/>
+            <path d="M12 8v4M12 16h.01" stroke="#ff4757" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="error-message">
           ${message}
         </div>
-      `,
-      buttons: [
+        ${message.includes('密码尝试次数') ? 
+          `<div class="error-hint">
+            <svg width="16" height="16" viewBox="0 0 24 24" style="vertical-align: middle; margin-right: 8px;">
+              <path fill="#666" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+            </svg>
+            为了账户安全，请等待30秒后再次尝试
+          </div>` : ''
+        }
+      </div>
+      
+      <style>
+        .error-dialog-container {
+          text-align: center;
+          padding: 20px 10px;
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        
+        .error-icon {
+          margin-bottom: 20px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
+        
+        .error-message {
+          font-size: 16px;
+          color: #333;
+          line-height: 1.6;
+          margin-bottom: 15px;
+          font-weight: 500;
+        }
+        
+        .error-hint {
+          background: #f8f9fa;
+          border: 1px solid #e9ecef;
+          border-radius: 8px;
+          padding: 12px;
+          font-size: 14px;
+          color: #666;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-top: 15px;
+        }
+        
+        .error-hint svg {
+          opacity: 0.7;
+        }
+      </style>`,
+      [
         {
-          text: '确定',
+          text: '我知道了',
           type: 'primary',
-          onClick: (e, dialog, background) => {
-            UIUtils.closeDialog(background);
+          onClick: (e) => {
+            this.closeDialog(overlay);
             this.preventEscape(false); // 关闭错误提示时移除ESC拦截
           }
         }
-      ],
-      className: ExitHandler.DIALOG_CLASS
-    });
+      ]
+    );
+    
+    // 🔧 修复：确保错误弹窗按钮可交互
+    setTimeout(() => {
+      const confirmButton = dialog.querySelector('.dialog-button.primary');
+      if (confirmButton) {
+        this.ensureButtonInteractive(confirmButton);
+        
+        // 验证按钮状态
+        if (!this.verifyButtonInteractive(confirmButton)) {
+          console.warn('[专注模式] 错误弹窗按钮交互异常，尝试修复');
+          this.ensureButtonInteractive(confirmButton);
+        }
+      }
+    }, 100);
+    
+    // 添加自动聚焦和回车键支持
+    setTimeout(() => {
+      const confirmButton = dialog.querySelector('.dialog-button.primary');
+      if (confirmButton) {
+        confirmButton.focus();
+        
+        // 添加回车键支持
+        const handleKeydown = (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            confirmButton.click();
+            document.removeEventListener('keydown', handleKeydown);
+          }
+        };
+        document.addEventListener('keydown', handleKeydown);
+        
+        // 5秒后移除键盘监听器
+        setTimeout(() => {
+          document.removeEventListener('keydown', handleKeydown);
+        }, 5000);
+      }
+    }, 200);
   }
   
   /**
    * 显示退出准备进度界面
-   * @param {HTMLElement} container - 容器元素，可以是局部覆盖层
+   * @param {HTMLElement} topOverlay - 顶层遮罩元素
    * @returns {Promise<boolean>} 退出是否成功
    */
-  async showExitProgress(container) {
+  async showExitProgress(topOverlay) {
     return new Promise((resolve) => {
       // 确保样式已初始化
       this.ensureFullscreenDialogStyles();
@@ -1299,58 +1092,72 @@ class ExitHandler {
       const exitProgressDialog = document.createElement('div');
       exitProgressDialog.className = 'focus-exit-dialog exit-progress-dialog';
       
-      // 设置对话框内容
+      // 使用动态计算的 z-index
+      const dialogZIndex = this.calculateOptimalZIndex('highest');
+      exitProgressDialog.style.zIndex = dialogZIndex;
+      
+      // 设置对话框内容 - ✅ 所有样式已移至 exit-handler.css
       exitProgressDialog.innerHTML = `
-        <div class="exit-progress-content" style="padding: 20px; text-align: center;">
-          <h3 style="font-size: 20px; margin-bottom: 20px; color: var(--focus-primary); font-weight: bold;">正在准备退出专注模式</h3>
+        <div class="exit-progress-content">
+          <h3>正在准备退出专注模式</h3>
           
-          <div class="exit-message" style="margin-bottom: 20px; font-size: 16px; color: #eee;">
+          <div class="exit-message">
             请稍候，正在保存您的学习进度...
           </div>
           
-          <div class="progress-container" style="background: rgba(255, 255, 255, 0.1); height: 8px; border-radius: 4px; overflow: hidden; margin: 10px 0 20px;">
-            <div class="progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, var(--focus-primary), #00c4ff); transition: width 3s ease;"></div>
+          <div class="exit-progress-container">
+            <div class="exit-progress-bar">
+              <div class="exit-progress-fill"></div>
+            </div>
           </div>
           
-          <div class="exit-status" style="font-size: 14px; color: #ccc;">
+          <div class="exit-status">
             正在完成退出前准备...
           </div>
         </div>
       `;
       
-      // 确保容器存在
-      let overlay = container;
-      if (!overlay) {
-        // 如果没有提供容器，创建一个局部覆盖层
-        overlay = this.createPartialOverlay({
-          width: 450,
-          height: 'auto',
-          position: 'player',
-          eventPassthrough: true
-        });
-      } else {
-        // 清空现有容器
-        while (overlay.firstChild) {
-          overlay.removeChild(overlay.firstChild);
-        }
+      // 确保顶层遮罩存在
+      if (!topOverlay) {
+        topOverlay = document.createElement('div');
+        // ✅ 修复：使用正确的类名和flexbox布局
+        topOverlay.className = 'focus-dialog-overlay';
+        
+        // 使用动态计算的 z-index
+        const overlayZIndex = this.calculateOptimalZIndex('critical');
+        topOverlay.style.cssText = `
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          width: 100vw;
+          height: 100vh;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          background: rgba(0, 0, 0, 0.7);
+          z-index: ${overlayZIndex};
+        `;
+        
+        document.body.appendChild(topOverlay);
       }
       
-      // 将进度对话框添加到容器
-      overlay.appendChild(exitProgressDialog);
+      // 将进度对话框添加到遮罩层
+      topOverlay.appendChild(exitProgressDialog);
       
-      // 安全定位对话框，避免覆盖重要控件
-      this.positionDialogSafely(exitProgressDialog, overlay);
-      
-      // 设置ESC键处理
+      // 设置ESC键阻止
       this.preventEscape(true);
       
-      // 获取进度条元素
-      const progressBar = exitProgressDialog.querySelector('.progress-bar');
+      // 获取进度条元素 - ✅ 使用正确的类名
+      const progressBar = exitProgressDialog.querySelector('.exit-progress-fill');
       const exitStatus = exitProgressDialog.querySelector('.exit-status');
       
       // 启动进度动画
       setTimeout(() => {
+        if (progressBar) {
         progressBar.style.width = '100%';
+        }
       }, 100);
       
       // 更新状态文本的消息
@@ -1371,7 +1178,7 @@ class ExitHandler {
       const observer = this.monitorDOMChanges(exitProgressDialog, (wasRemoved, needsStyleFix) => {
         if (wasRemoved || needsStyleFix) {
           console.log('[专注模式] 退出进度对话框被干扰，尝试恢复');
-          this.recoverUIElement(overlay, exitProgressDialog, () => {
+          this.recoverUIElement(topOverlay, exitProgressDialog, () => {
             // 如果无法恢复，直接完成退出流程
             resolve(true);
           });
@@ -1399,10 +1206,10 @@ class ExitHandler {
           console.log('[专注模式] 退出进度完成，设置全局退出状态标记');
         }
         
-        // 移除覆盖层和对话框
+        // 移除遮罩层和对话框
         setTimeout(() => {
-          if (overlay && overlay.parentNode) {
-            overlay.parentNode.removeChild(overlay);
+          if (topOverlay && topOverlay.parentNode) {
+            topOverlay.parentNode.removeChild(topOverlay);
           }
           
           // 退出已批准
@@ -1429,51 +1236,48 @@ class ExitHandler {
       this.exitTransitionActive = true;
       console.log('[专注模式] 显示退出过渡提示');
       
-      // 创建局部覆盖层
-      const transitionOverlay = this.createPartialOverlay({
-        width: 450,
-        height: 'auto',
-        position: 'top',
-        eventPassthrough: true
-      });
+      // 创建过渡层 - 使用统一的遮罩层类名
+      const transitionOverlay = document.createElement('div');
+      transitionOverlay.className = 'focus-dialog-overlay exit-transition-overlay';
       
-      transitionOverlay.classList.add('exit-transition-overlay');
-      transitionOverlay.classList.add('visible');
+      // 使用动态计算的 z-index
+      const overlayZIndex = this.calculateOptimalZIndex('overlay');
+      transitionOverlay.style.zIndex = overlayZIndex;
       
-      // 设置内容
-      const transitionContent = document.createElement('div');
-      transitionContent.className = 'exit-transition-content';
+      // 添加flexbox居中样式（focus-dialog-overlay 已经有了，这里是确保）
+      transitionOverlay.style.display = 'flex';
+      transitionOverlay.style.justifyContent = 'center';
+      transitionOverlay.style.alignItems = 'center';
       
-      transitionContent.innerHTML = `
-        <div class="exit-header">
-          <h3>Attention is all you need</h3>
-        </div>
-        <div class="exit-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path>
-            <path d="M8 12h8"></path>
-            <path d="M12 8v8"></path>
-          </svg>
-        </div>
-        <div class="exit-title">已退出全屏模式</div>
-        <div class="exit-description">
-          <p>已切换为宽屏模式</p>
-          <p>已屏蔽推荐视频、相关视频和广告</p>
-          <p>您可以正常浏览评论区</p>
-        </div>
-        <div class="exit-progress-bar">
-          <div class="exit-progress-fill"></div>
-        </div>
-        <div class="exit-confirm-button">
-          <button class="confirm-btn">确认</button>
+      transitionOverlay.innerHTML = `
+        <div class="exit-transition-content">
+          <div class="exit-header">
+            <h3>Attention is all you need</h3>
+          </div>
+          <div class="exit-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path>
+              <path d="M8 12h8"></path>
+              <path d="M12 8v8"></path>
+            </svg>
+          </div>
+          <div class="exit-title">已退出全屏模式</div>
+          <div class="exit-description">
+            <p>已切换为宽屏模式</p>
+            <p>已屏蔽推荐视频、相关视频和广告</p>
+            <p>您可以正常浏览评论区</p>
+          </div>
+          <div class="exit-progress-bar">
+            <div class="exit-progress-fill"></div>
+          </div>
+          <div class="exit-confirm-button">
+            <button class="confirm-btn" id="exit-transition-confirm">确认</button>
+          </div>
         </div>
       `;
       
-      // 添加内容到覆盖层
-      transitionOverlay.appendChild(transitionContent);
-      
-      // 安全定位对话框，避免覆盖重要控件
-      this.positionDialogSafely(transitionContent, transitionOverlay);
+      // 添加到页面
+      document.body.appendChild(transitionOverlay);
       
       // 监测DOM变化，确保过渡提示不会被移除
       const observer = this.monitorDOMChanges(transitionOverlay, (wasRemoved, needsStyleFix) => {
@@ -1482,62 +1286,32 @@ class ExitHandler {
           console.log('[专注模式] 退出过渡提示被移除，不再尝试恢复');
           this.exitTransitionActive = false;
         } else if (needsStyleFix) {
-          // 如果只是样式问题，尝试修复
+          // 如果只是样式问题，修复样式并重新绑定事件
           console.log('[专注模式] 修复退出过渡提示样式');
-          this.recoverUIElement(transitionOverlay, transitionContent);
+          transitionOverlay.style.zIndex = this.calculateOptimalZIndex('overlay');
+          transitionOverlay.style.opacity = '1';
+          transitionOverlay.style.visibility = 'visible';
+          // 重新绑定按钮事件
+          this.bindExitTransitionEvents(transitionOverlay, observer);
         }
       });
       
-      // 启动进度条动画
-      const progressFill = transitionOverlay.querySelector('.exit-progress-fill');
-      if (progressFill) {
-        setTimeout(() => {
-          progressFill.style.width = '100%';
-        }, 100);
-      }
-      
-      // 设置确认按钮事件
-      const confirmBtn = transitionOverlay.querySelector('.confirm-btn');
-      if (confirmBtn) {
-        confirmBtn.addEventListener('click', () => {
-          // 添加淡出动画类
-          transitionOverlay.classList.add('fade-out');
+      // 等待一帧后再添加可见类，确保过渡效果正常
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          transitionOverlay.classList.add('focus-dialog-visible');
           
-          // 动画结束后移除
-          setTimeout(() => {
-            if (transitionOverlay && transitionOverlay.parentNode) {
-              transitionOverlay.parentNode.removeChild(transitionOverlay);
-            }
-            
-            // 重置状态
-            this.exitTransitionActive = false;
-            
-            // 停止DOM监测
-            if (observer) observer.disconnect();
-          }, 500);
+          // 进度条动画
+          const progressFill = transitionOverlay.querySelector('.exit-progress-fill');
+          if (progressFill) {
+            progressFill.style.width = '100%';
+          }
         });
-      }
+      });
       
-      // 5秒后自动淡出
-      setTimeout(() => {
-        if (transitionOverlay && transitionOverlay.parentNode) {
-          // 添加淡出动画类
-          transitionOverlay.classList.add('fade-out');
-          
-          // 动画结束后移除
-          setTimeout(() => {
-            if (transitionOverlay && transitionOverlay.parentNode) {
-              transitionOverlay.parentNode.removeChild(transitionOverlay);
-            }
-            
-            // 重置状态
-            this.exitTransitionActive = false;
-            
-            // 停止DOM监测
-            if (observer) observer.disconnect();
-          }, 500);
-        }
-      }, 5000);
+      // 绑定交互事件
+      return this.bindExitTransitionEvents(transitionOverlay, observer);
+      
     } catch (err) {
       console.error('[专注模式] 显示退出过渡提示失败:', err);
       this.exitTransitionActive = false;
@@ -1545,234 +1319,406 @@ class ExitHandler {
   }
   
   /**
-   * 创建局部覆盖层，而非全屏覆盖
-   * @param {Object} options - 配置选项
-   * @param {number} [options.width] - 覆盖层宽度
-   * @param {number} [options.height] - 覆盖层高度
-   * @param {string} [options.position] - 位置 ('center', 'top', 'player')
-   * @param {boolean} [options.eventPassthrough] - 是否允许事件透传
-   * @returns {HTMLElement} 创建的覆盖层元素
+   * 恢复按钮状态的辅助方法
+   * 修复：确保按钮状态能够正确恢复，避免按钮卡在禁用状态
    */
-  createPartialOverlay(options = {}) {
-    const {
-      width = 500,
-      height = 'auto',
-      position = 'center',
-      eventPassthrough = true
-    } = options;
+  restoreButtonState(button, originalText, delay = 0) {
+    if (!button) return;
     
-    // 创建覆盖层
-    const overlay = document.createElement('div');
-    overlay.className = 'partial-exit-overlay';
-    if (eventPassthrough) {
-      overlay.classList.add('event-passthrough');
-    }
-    
-    // 使用动态计算的 z-index
-    const overlayZIndex = this.calculateOptimalZIndex('overlay');
-    
-    // 设置基本样式
-    overlay.style.zIndex = overlayZIndex;
-    overlay.style.width = typeof width === 'number' ? `${width}px` : width;
-    overlay.style.height = typeof height === 'number' ? `${height}px` : height;
-    
-    // 根据位置设置定位
-    switch (position) {
-      case 'top':
-        overlay.style.top = '10%';
-        overlay.style.left = '50%';
-        overlay.style.transform = 'translateX(-50%)';
-        break;
-      case 'player':
-        // 尝试检测播放器位置
-        const playerControls = this.detectPlayerControls();
-        if (playerControls) {
-          // 如果找到播放器控件，避开它们
-          overlay.style.top = `${playerControls.top - 20}px`;
-          overlay.style.left = '50%';
-          overlay.style.transform = 'translateX(-50%)';
-        } else {
-          // 默认放在中间偏上位置
-          overlay.style.top = '30%';
-          overlay.style.left = '50%';
-          overlay.style.transform = 'translateX(-50%)';
-        }
-        break;
-      case 'center':
-      default:
-        overlay.style.top = '50%';
-        overlay.style.left = '50%';
-        overlay.style.transform = 'translate(-50%, -50%)';
-        break;
-    }
-    
-    // 添加到页面
-    document.body.appendChild(overlay);
-    
-    // 如果启用事件透传，设置相应处理
-    if (eventPassthrough) {
-      this.setupEventPassthrough(overlay);
-    }
-    
-    return overlay;
-  }
-  
-  /**
-   * 检测B站播放器控件位置
-   * @returns {Object|null} 播放器控件位置信息或null
-   */
-  detectPlayerControls() {
-    try {
-      // 尝试查找B站播放器控件
-      const controlSelectors = [
-        '.bilibili-player-video-control', // 标准播放器控件
-        '.bpx-player-control-wrap',       // 新版播放器控件
-        '.bilibili-player-video-bottom',  // 底部控制栏
-        '.bpx-player-control-bottom'      // 新版底部控制栏
-      ];
-      
-      for (const selector of controlSelectors) {
-        const controlElement = document.querySelector(selector);
-        if (controlElement) {
-          const rect = controlElement.getBoundingClientRect();
-          return {
-            element: controlElement,
-            top: rect.top,
-            bottom: rect.bottom,
-            left: rect.left,
-            right: rect.right,
-            width: rect.width,
-            height: rect.height
-          };
-        }
+    const restore = () => {
+      try {
+        button.disabled = false;
+        button.textContent = originalText || '确认';
+        button.style.opacity = '1';
+        console.log('[专注模式] 按钮状态已恢复');
+      } catch (err) {
+        console.warn('[专注模式] 恢复按钮状态失败:', err);
       }
-      
-      // 如果没有找到具体控件，尝试查找播放器本身
-      const playerSelectors = [
-        '.bilibili-player-video',         // 标准播放器
-        '.bpx-player-video-area',         // 新版播放器
-        'video'                           // 视频元素
-      ];
-      
-      for (const selector of playerSelectors) {
-        const playerElement = document.querySelector(selector);
-        if (playerElement) {
-          const rect = playerElement.getBoundingClientRect();
-          // 假设控件在播放器底部
-          return {
-            element: playerElement,
-            top: rect.bottom - 50, // 估计控件高度为50px
-            bottom: rect.bottom,
-            left: rect.left,
-            right: rect.right,
-            width: rect.width,
-            height: 50 // 估计值
-          };
-        }
-      }
-      
-      return null;
-    } catch (err) {
-      console.error('[专注模式] 检测播放器控件失败:', err);
-      return null;
+    };
+    
+    if (delay > 0) {
+      setTimeout(restore, delay);
+    } else {
+      restore();
     }
   }
   
   /**
-   * 设置事件透传，允许鼠标事件透过覆盖层传递到底层元素
-   * @param {HTMLElement} overlay - 覆盖层元素
+   * 绑定退出过渡对话框的事件处理器
+   * 修复：避免重复绑定事件，提高交互可靠性
    */
-  setupEventPassthrough(overlay) {
-    if (!overlay) return;
-    
-    // 监听鼠标事件，检查是否应该透传
-    const mouseEvents = ['click', 'mousedown', 'mouseup', 'mousemove'];
-    
-    mouseEvents.forEach(eventType => {
-      overlay.addEventListener(eventType, (e) => {
-        // 检查点击的是否是对话框或按钮等交互元素
-        let target = e.target;
-        let isInteractive = false;
+  bindExitTransitionEvents(transitionOverlay, observer) {
+    return new Promise((resolve) => {
+      let isResolved = false; // 防止重复resolve
+      
+      const handleConfirmClick = () => {
+        if (isResolved) return;
+        isResolved = true;
         
-        // 向上遍历DOM树，检查是否点击了对话框或按钮
-        while (target && target !== overlay) {
-          if (target.classList.contains('focus-exit-dialog') || 
-              target.classList.contains('dialog-button') ||
-              target.classList.contains('confirm-btn') ||
-              target.tagName === 'BUTTON' ||
-              target.tagName === 'INPUT') {
-            isInteractive = true;
-            break;
-          }
-          target = target.parentElement;
+        console.log('[专注模式] 用户确认退出过渡');
+        
+        // 停止DOM监测
+        if (observer) observer.disconnect();
+        
+        // 添加淡出类，使用统一的类名系统
+        transitionOverlay.classList.add('focus-dialog-fade-out');
+        transitionOverlay.classList.remove('focus-dialog-visible');
+        
+        // 确保状态保持一致
+        if (window.focusMode && window.focusMode.fullscreenState) {
+          // 确保退出状态标记保持激活，直到deactivate完成
+          this.setExitStates(true, true);
         }
         
-        // 如果点击的不是交互元素，透传事件
-        if (!isInteractive) {
-          // 获取当前位置下的底层元素
-          const elementsUnder = document.elementsFromPoint(e.clientX, e.clientY);
-          
-          // 找到第一个不是覆盖层或其子元素的元素
-          const targetElement = elementsUnder.find(el => !overlay.contains(el) && el !== overlay);
-          
-          if (targetElement) {
-            // 创建新的事件并触发
-            const newEvent = new MouseEvent(eventType, {
-              bubbles: true,
-              cancelable: true,
-              view: window,
-              detail: e.detail,
-              screenX: e.screenX,
-              screenY: e.screenY,
-              clientX: e.clientX,
-              clientY: e.clientY,
-              ctrlKey: e.ctrlKey,
-              altKey: e.altKey,
-              shiftKey: e.shiftKey,
-              metaKey: e.metaKey,
-              button: e.button,
-              buttons: e.buttons,
-              relatedTarget: e.relatedTarget
-            });
-            
-            // 触发事件
-            targetElement.dispatchEvent(newEvent);
-            
-            // 阻止原始事件
-            e.preventDefault();
-            e.stopPropagation();
+        // 延迟后移除整个弹窗
+        setTimeout(() => {
+          if (transitionOverlay.parentNode) {
+            transitionOverlay.parentNode.removeChild(transitionOverlay);
           }
+          this.exitTransitionActive = false;
+          resolve();
+        }, 500);
+      };
+      
+      const handleAutoHide = () => {
+        if (isResolved) return;
+        isResolved = true;
+        
+        console.log('[专注模式] 退出过渡自动隐藏');
+        
+        // 停止DOM监测
+        if (observer) observer.disconnect();
+        
+        // 添加淡出类，使用统一的类名系统
+        transitionOverlay.classList.add('focus-dialog-fade-out');
+        transitionOverlay.classList.remove('focus-dialog-visible');
+        
+        // 确保状态保持一致
+        if (window.focusMode && window.focusMode.fullscreenState) {
+          // 确保退出状态标记保持激活，直到deactivate完成
+          this.setExitStates(true, true);
         }
-      });
+        
+        setTimeout(() => {
+          if (transitionOverlay.parentNode) {
+            transitionOverlay.parentNode.removeChild(transitionOverlay);
+          }
+          this.exitTransitionActive = false;
+          resolve();
+        }, 500); // 等待淡出动画完成
+      };
+      
+      // 获取确认按钮并添加点击事件（只绑定一次）
+      const confirmButton = transitionOverlay.querySelector('#exit-transition-confirm');
+      if (confirmButton) {
+        // 🔧 修复：确保按钮处于可交互状态
+        this.ensureButtonInteractive(confirmButton);
+        
+        // 移除可能存在的旧事件监听器
+        const existingHandler = confirmButton._exitTransitionHandler;
+        if (existingHandler) {
+          confirmButton.removeEventListener('click', existingHandler);
+        }
+        
+        // 绑定新的事件监听器
+        confirmButton._exitTransitionHandler = handleConfirmClick;
+        confirmButton.addEventListener('click', handleConfirmClick);
+        
+        // 添加视觉反馈
+        confirmButton.addEventListener('mousedown', () => {
+          confirmButton.style.transform = 'scale(0.95)';
+        });
+        
+        confirmButton.addEventListener('mouseup', () => {
+          confirmButton.style.transform = '';
+        });
+        
+        console.log('[专注模式] 退出过渡按钮事件已绑定');
+        
+        // 🔧 修复：验证按钮可交互性
+        setTimeout(() => {
+          if (!this.verifyButtonInteractive(confirmButton)) {
+            console.warn('[专注模式] 警告：按钮可能无法交互，尝试修复');
+            this.ensureButtonInteractive(confirmButton);
+          }
+        }, 100);
+      }
+      
+      // 自动隐藏定时器（5秒后）
+      const autoHideTimer = setTimeout(handleAutoHide, 5000);
+      
+      // 如果手动确认，清除自动隐藏定时器
+      if (confirmButton) {
+        confirmButton.addEventListener('click', () => {
+          clearTimeout(autoHideTimer);
+        });
+      }
     });
   }
   
   /**
-   * 安全定位对话框，避免覆盖重要控件
-   * @param {HTMLElement} dialog - 对话框元素
-   * @param {HTMLElement} container - 容器元素
+   * 创建居中对话框 - 使用增强的UIUtils.createDialog
+   * @param {string} title - 对话框标题
+   * @param {string} content - 对话框内容HTML
+   * @param {Array} buttons - 按钮配置数组
+   * @returns {Object} 包含对话框和背景遮罩元素的对象
    */
-  positionDialogSafely(dialog, container) {
-    if (!dialog || !container) return;
+  createCenteredDialog(title, content, buttons) {
+    // 确保样式已初始化
+    this.ensureFullscreenDialogStyles();
     
-    try {
-      // 检测播放器控件位置
-      const playerControls = this.detectPlayerControls();
-      
-      if (playerControls) {
-        // 确保对话框不会覆盖播放器控件
-        const dialogRect = dialog.getBoundingClientRect();
-        
-        // 如果对话框底部与播放器控件重叠，向上移动对话框
-        if (dialogRect.bottom > playerControls.top) {
-          const overlap = dialogRect.bottom - playerControls.top;
-          const newTop = Math.max(10, (parseInt(dialog.style.top) || 0) - overlap - 20);
-          dialog.style.top = `${newTop}px`;
+    // 计算最佳z-index
+    const overlayZIndex = this.calculateOptimalZIndex('critical');
+    
+    // 转换按钮配置格式以兼容UIUtils.createDialog
+    const uiUtilsButtons = buttons ? buttons.map((btn, index) => ({
+      text: btn.text,
+      type: btn.type || 'secondary',
+      id: btn.id || `dialog-btn-${index}`,
+      onClick: (e, dialog, background) => {
+        if (typeof btn.onClick === 'function') {
+          // 适配参数：(e, dialog, overlay)
+          btn.onClick(e, dialog, background);
         }
       }
-    } catch (err) {
-      console.error('[专注模式] 安全定位对话框失败:', err);
+    })) : [];
+    
+    // 使用UIUtils.createDialog创建对话框
+    const { dialog, background } = UIUtils.createDialog({
+      title: title,
+      content: content,
+      buttons: uiUtilsButtons,
+      className: 'focus-exit-dialog-overlay',  // ✅ 使用明确的类名标识退出弹窗
+      preventEscape: true,  // 启用ESC键阻止
+      customZIndex: overlayZIndex  // 使用动态计算的z-index
+    });
+    
+    // ✅ 添加 focus-exit-dialog 类，让 exit-handler.css 中的样式生效
+    dialog.classList.add('focus-exit-dialog');
+    
+    // 返回对话框和背景元素（使用overlay作为别名以保持兼容性）
+    return { dialog, overlay: background };
+  }
+  
+  /**
+   * 关闭对话框
+   * @param {HTMLElement} overlay - 对话框遮罩元素
+   */
+  closeDialog(overlay) {
+    if (overlay && overlay.parentNode) {
+      overlay.parentNode.removeChild(overlay);
     }
+  }
+  
+  /**
+   * 确保按钮处于可交互状态
+   * @param {HTMLElement} button - 按钮元素
+   */
+  ensureButtonInteractive(button) {
+    if (!button) return;
+    
+    try {
+      // 重置所有可能影响交互的属性
+      button.disabled = false;
+      button.style.pointerEvents = 'auto';
+      button.style.cursor = 'pointer';
+      button.style.opacity = '1';
+      button.style.display = button.style.display || 'inline-block';
+      button.style.visibility = 'visible';
+      
+      // 确保按钮在正确的z-index层级
+      const parentOverlay = button.closest('.dialog-overlay, .focus-dialog-overlay');
+      if (parentOverlay) {
+        parentOverlay.style.pointerEvents = 'auto';
+      }
+      
+      console.log('[专注模式] 按钮状态已重置为可交互:', button.textContent.trim().substring(0, 20));
+    } catch (err) {
+      console.error('[专注模式] 重置按钮状态失败:', err);
+    }
+  }
+  
+  /**
+   * 验证按钮是否可交互
+   * @param {HTMLElement} button - 按钮元素
+   * @returns {boolean} 是否可交互
+   */
+  verifyButtonInteractive(button) {
+    if (!button) return false;
+    
+    try {
+      const style = window.getComputedStyle(button);
+      
+      const isVisible = style.display !== 'none' && 
+                       style.visibility !== 'hidden' &&
+                       parseFloat(style.opacity) > 0.1;
+      
+      const isClickable = style.pointerEvents !== 'none' && 
+                         !button.disabled;
+      
+      const hasListener = button._exitTransitionHandler !== undefined ||
+                         button.onclick !== null;
+      
+      const isInteractive = isVisible && isClickable && hasListener;
+      
+      if (!isInteractive) {
+        console.warn('[专注模式] 按钮不可交互:', {
+          text: button.textContent.trim(),
+          visible: isVisible,
+          clickable: isClickable,
+          hasListener: hasListener,
+          disabled: button.disabled,
+          pointerEvents: style.pointerEvents
+        });
+      }
+      
+      return isInteractive;
+    } catch (err) {
+      console.error('[专注模式] 验证按钮状态失败:', err);
+      return false;
+    }
+  }
+  
+  /**
+   * 弹窗交互诊断函数
+   * 修复：提供详细的诊断信息，帮助排查交互问题
+   */
+  diagnoseDialogInteraction() {
+    console.log('\n🔍========== 弹窗交互诊断报告 ==========');
+    
+    // 检查当前活动的对话框
+    const dialogs = document.querySelectorAll(
+      '.focus-exit-dialog, .exit-transition-overlay, .dialog-overlay, .focus-dialog-overlay'
+    );
+    
+    if (dialogs.length === 0) {
+      console.log('✅ 当前没有活动的退出弹窗');
+      console.log('💡 要测试弹窗交互，请尝试按 ESC 键退出全屏');
+      return { status: 'no-dialogs', dialogs: 0 };
+    }
+    
+    console.log(`🔍 发现 ${dialogs.length} 个活动弹窗:`);
+    
+    let overallStatus = 'healthy';
+    const results = [];
+    
+    dialogs.forEach((dialog, index) => {
+      console.log(`\n📋 弹窗 ${index + 1}:`);
+      console.log('   类名:', dialog.className);
+      console.log('   ID:', dialog.id || '无');
+      
+      // 检查显示状态
+      const style = window.getComputedStyle(dialog);
+      const displayStatus = {
+        display: style.display,
+        visibility: style.visibility,
+        opacity: style.opacity,
+        zIndex: style.zIndex,
+        pointerEvents: style.pointerEvents
+      };
+      
+      console.log('   显示状态:', displayStatus);
+      
+      // 检查按钮
+      const buttons = dialog.querySelectorAll('button, [role="button"], [class*="btn"]');
+      console.log(`   找到 ${buttons.length} 个按钮`);
+      
+      let workingButtons = 0;
+      let disabledButtons = 0;
+      
+      buttons.forEach((btn, btnIndex) => {
+        const btnStyle = window.getComputedStyle(btn);
+        const isClickable = btnStyle.pointerEvents !== 'none' && 
+                           btnStyle.display !== 'none' && 
+                           btnStyle.visibility !== 'hidden';
+        const isDisabled = btn.disabled;
+        const hasText = btn.textContent.trim().length > 0;
+        
+        if (isClickable && !isDisabled && hasText) {
+          workingButtons++;
+        } else {
+          if (isDisabled) disabledButtons++;
+          
+          console.log(`   ❌ 按钮 ${btnIndex + 1} 状态异常:`, {
+            text: btn.textContent.trim(),
+            disabled: isDisabled,
+            pointerEvents: btnStyle.pointerEvents,
+            display: btnStyle.display,
+            visibility: btnStyle.visibility,
+            clickable: isClickable
+          });
+          
+          if (overallStatus === 'healthy') overallStatus = 'warning';
+        }
+      });
+      
+      // 检查事件监听器
+      let hasEventListeners = false;
+      buttons.forEach(btn => {
+        if (btn._exitTransitionHandler || btn.onclick || btn.addEventListener.length > 0) {
+          hasEventListeners = true;
+        }
+      });
+      
+      const dialogResult = {
+        index: index + 1,
+        element: dialog,
+        totalButtons: buttons.length,
+        workingButtons: workingButtons,
+        disabledButtons: disabledButtons,
+        hasEventListeners: hasEventListeners,
+        displayStatus: displayStatus
+      };
+      
+      results.push(dialogResult);
+      
+      console.log(`   🎯 按钮状态: ${workingButtons}/${buttons.length} 可交互, ${disabledButtons} 禁用`);
+      console.log(`   📡 事件监听器: ${hasEventListeners ? '已绑定' : '未检测到'}`);
+      
+      if (workingButtons === 0 && buttons.length > 0) {
+        overallStatus = 'error';
+        console.log('   🚨 警告: 所有按钮都无法交互！');
+      }
+    });
+    
+    // 检查全局状态
+    console.log('\n🌐 全局状态检查:');
+    console.log('   ExitHandler活动状态:', {
+      exitRequested: this.exitRequested,
+      reminderDialogActive: this.reminderDialogActive,
+      exitTransitionActive: this.exitTransitionActive
+    });
+    
+    if (window.focusMode) {
+      console.log('   FocusMode退出状态:', {
+        exitApproved: window.focusMode.fullscreenState?.exitApproved,
+        exitInProgress: window.focusMode.fullscreenState?.exitInProgress
+      });
+    }
+    
+    // 总结报告
+    console.log(`\n📊 诊断总结:`);
+    console.log(`   状态: ${overallStatus === 'healthy' ? '✅ 正常' : overallStatus === 'warning' ? '⚠️ 有警告' : '❌ 有错误'}`);
+    console.log(`   弹窗数量: ${dialogs.length}`);
+    console.log(`   可交互按钮: ${results.reduce((sum, r) => sum + r.workingButtons, 0)}`);
+    console.log(`   禁用按钮: ${results.reduce((sum, r) => sum + r.disabledButtons, 0)}`);
+    
+    if (overallStatus !== 'healthy') {
+      console.log('\n🔧 建议修复措施:');
+      console.log('   1. 刷新页面重试');
+      console.log('   2. 检查控制台错误日志');
+      console.log('   3. 确认没有其他脚本干扰');
+      console.log('   4. 尝试使用 window.focusMode.exitHandler.restoreButtonState() 恢复按钮状态');
+    }
+    
+    console.log('\n========================================');
+    
+    return {
+      status: overallStatus,
+      dialogs: dialogs.length,
+      results: results,
+      timestamp: new Date().toISOString()
+    };
   }
 }
 

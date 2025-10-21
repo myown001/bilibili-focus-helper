@@ -1,27 +1,5 @@
 /* focus-video.css - 视频专注模式核心样式 */
-
-/* 半专注模式 - 只隐藏干扰元素，保留B站原界面结构 */
-body.semi-focus-mode .reply-box,
-body.semi-focus-mode .comment-container,
-body.semi-focus-mode .comment-m,
-body.semi-focus-mode .bpx-player-commenting-area, 
-body.semi-focus-mode #comment, 
-body.semi-focus-mode #comment-module, 
-body.semi-focus-mode .common-comment-wrapper,
-body.semi-focus-mode .bilibili-player-video-recommend,
-body.semi-focus-mode .recommend-video,
-body.semi-focus-mode .recommend-list-v2,
-body.semi-focus-mode .video-toolbar-right,
-body.semi-focus-mode .share-box {
-  display: none !important;
-}
-
-/* 全屏模式下的隐藏规则（保留，仅在用户主动激活时应用） */
-body.fullscreen-mode > *:not(#bilibili-player):not(.bpx-player-container):not(.player-container):not(.bilibili-player-video-container):not(.focus-collection-sidebar):not(.sidebar-toggle):not(.focus-control-bar):not(.study-timer-display):not(.focus-mode-speed-indicator):not(.focus-mode-reminder):not(.dialog-overlay) {
-  display: none !important;
-}
-
-/* 仅在全屏模式下调整播放器样式 */
+/* 🎯 修复全屏黑色框条问题：确保播放器完全填充屏幕 */
 body.fullscreen-mode #bilibili-player, 
 body.fullscreen-mode .bpx-player-container, 
 body.fullscreen-mode .player-container, 
@@ -31,20 +9,156 @@ body.fullscreen-mode .bilibili-player-video-container {
   left: 0 !important;
   width: 100vw !important;
   height: 100vh !important;
-  z-index: 999999 !important;
+  z-index: 10 !important;  /* 🔧 关键修复：降低容器z-index，防止挡住控制栏 */
   background: #000 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+  max-height: 100vh !important;
+  min-height: 100vh !important;
+  overflow: visible !important;  /* 🔧 关键修复：改为visible，允许控制栏菜单向上弹出而不被裁剪 */
+}
+
+/* 🎯 确保控制栏显示在播放器上方 */
+body.fullscreen-mode .bpx-player-control-wrap,
+body.fullscreen-mode .bpx-player-sending-bar {
+  z-index: 9999999 !important; /* 🔧 关键修复：超高z-index确保控制栏在最上层 */
+  /* position: relative !important; */ /* ❌ 移除：破坏了B站的absolute定位 */
+}
+
+/* 🔧 关键修复：确保播放器内部区域完全填充
+body.fullscreen-mode .bpx-player-video-area,
+body.fullscreen-mode .bpx-player-primary-area,
+body.fullscreen-mode .bilibili-player-area {
+  width: 100% !important;
+  height: 100% !important;
+  position: relative !important;
+  margin: 0 !important;
+  padding: 0 !important;
+} */
+
+/* 🎯 修复视频黑边问题：智能适配视频填充方式
+body.fullscreen-mode .bpx-player-video-wrap,
+body.fullscreen-mode .bilibili-player-video-wrap,
+body.fullscreen-mode .bpx-player-video {
+  width: 100% !important;
+  height: 100% !important;
+  position: relative !important;
+  margin: 0 !important;
+  padding: 0 !important;
+} */
+
+/* 🎯 简化版视频样式 - 只保留核心功能，让B站原生API处理细节
+body.fullscreen-mode video {
+  object-fit: contain !important; /* 保持比例，无裁剪 
+  width: 100% !important;
+  height: 100% !important;
+} 
+
+/* 🗑️ 移除复杂的响应式代码 - 交由B站原生API自动处理所有屏幕适配 */
+/* B站原生API会自动适配：21:9超宽屏、16:9标准屏、4:3窄屏、竖屏等所有比例 */
+
+/* 确保全屏状态下HTML和body标签设置为完整高度 
+body.fullscreen-mode,
+html.focus-mode {
+  width: 100% !important;
+  height: 100% !important;
+  overflow: hidden !important;
   margin: 0 !important;
   padding: 0 !important;
 }
 
-/* 确保视频播放器始终可见（半专注模式和全屏模式都适用） */
+/* 🎯 最小化播放器容器样式 - 仅作为备用方案
+body.fullscreen-mode .bpx-player-container,
+body.fullscreen-mode #bilibili-player,
+body.fullscreen-mode .player-container,
+body.fullscreen-mode .bilibili-player-video-container {
+  /* 只在CSS备用方案时生效的基础样式 
+  width: 100vw !important;
+  height: 100vh !important;
+  background: #000 !important;
+} 
+
+/* ✅ 支持原生全屏状态 - 与B站API协同工作 */
+:-webkit-full-screen #bilibili-player,
+:-moz-full-screen #bilibili-player,
+:fullscreen #bilibili-player {
+  background: #000 !important;
+}
+
+/* 🎯 智能修复：只确保播放器可见，让B站原生机制控制控制栏
 .bpx-player-container, #bilibili-player, .player-container, .bilibili-player-video-container,
 .bpx-player-video-area, .bpx-player-primary-area, .bpx-player-video-wrap, .bpx-player-video,
 .bilibili-player-area, .bilibili-player-video-wrap, .bilibili-player-video {
   display: block !important;
   visibility: visible !important;
-  opacity: 1 !important;
   z-index: 10000 !important;
+} */
+
+/* 🎯 让B站完全控制控制栏 - 移除所有强制干预 */
+/* 控制栏现在完全由B站原生机制管理，无插件干预 */
+
+/* 🚫 已移除控制栏按钮强制样式 - 让B站原生机制完全接管 */
+/* B站会自行管理按钮的交互状态和显示逻辑 */
+
+/* 🚫 已移除温和修复样式 - 避免与B站原生逻辑冲突 */
+/* B站的显示/隐藏逻辑现在可以正常工作 */
+
+/* 🚫 已移除按钮交互修复 - B站自行管理按钮状态 */
+/* 按钮的cursor和pointer-events现在由B站控制 */
+
+/* 宽屏模式样式 - 退出全屏后应用宽屏显示 */
+body.widescreen-mode:not(.fullscreen-mode) .bpx-player-container,
+body.widescreen-mode:not(.fullscreen-mode) #bilibili-player, 
+body.widescreen-mode:not(.fullscreen-mode) .player-container, 
+body.widescreen-mode:not(.fullscreen-mode) .bilibili-player-video-container {
+  width: 100% !important;
+  max-width: 100% !important;
+  height: auto !important;
+  margin: 0 auto !important;
+  z-index: 100 !important;
+  position: relative !important;
+}
+
+/* 宽屏模式下的主内容区域样式 */
+body.widescreen-mode:not(.fullscreen-mode) .video-container-v1,
+body.widescreen-mode:not(.fullscreen-mode) .left-container,
+body.widescreen-mode:not(.fullscreen-mode) .player-wrap,
+body.widescreen-mode:not(.fullscreen-mode) #playerWrap {
+  width: 100% !important;
+  max-width: 100% !important;
+  padding: 0 !important;
+}
+
+/* 宽屏模式下的页面容器样式 */
+body.widescreen-mode:not(.fullscreen-mode) .v-wrap,
+body.widescreen-mode:not(.fullscreen-mode) #app,
+body.widescreen-mode:not(.fullscreen-mode) .main-inner,
+body.widescreen-mode:not(.fullscreen-mode) .player-and-playlist-wrapper {
+  width: 100% !important;
+  max-width: 100% !important;
+  padding: 0 20px !important;
+}
+
+/* 宽屏模式下的评论区样式 */
+body.widescreen-mode:not(.fullscreen-mode) #comment,
+body.widescreen-mode:not(.fullscreen-mode) .comment-container,
+body.widescreen-mode:not(.fullscreen-mode) .comment-m,
+body.widescreen-mode:not(.fullscreen-mode) .common-comment-wrapper {
+  width: 100% !important;
+  max-width: 1200px !important;
+  margin: 20px auto !important;
+}
+
+/* 宽屏模式下隐藏右侧边栏和推荐内容 */
+body.widescreen-mode:not(.fullscreen-mode) .right-container,
+body.widescreen-mode:not(.fullscreen-mode) .recommend-container,
+body.widescreen-mode:not(.fullscreen-mode) .recommend-list,
+body.widescreen-mode:not(.fullscreen-mode) .recommend-video,
+body.widescreen-mode:not(.fullscreen-mode) .recommend-list-v2,
+body.widescreen-mode:not(.fullscreen-mode) [class*="recommend"],
+body.widescreen-mode:not(.fullscreen-mode) [class*="related-"] {
+  display: none !important;
 }
 
 /* 特别确保视频元素可见 */
@@ -54,24 +168,6 @@ body.fullscreen-mode .bilibili-player-video-container {
   visibility: visible !important;
   opacity: 1 !important;
   z-index: 10000 !important;
-}
-
-/* 弹幕相关 - 不完全隐藏，仅降低透明度 */
-.bpx-player-dm-root, 
-.bpx-player-dm-wrap,
-.bpx-player-dm-container,
-.bpx-player-danmaku,
-.bilibili-player-video-danmaku,
-.bilibili-player-video-danmaku-switch,
-.bpx-player-dm-btn-setting {
-  opacity: 0.2 !important;
-  transition: opacity 0.3s;
-}
-
-.bpx-player-dm-root:hover, 
-.bpx-player-dm-wrap:hover,
-.bpx-player-dm-btn-setting:hover {
-  opacity: 1 !important;
 }
 
 /* 滚动条相关 - 仅在全屏模式下隐藏 */
@@ -85,18 +181,9 @@ html.focus-mode {
 
 html.focus-mode ::-webkit-scrollbar {
   display: none !important;
-}
+} */
 
-/* 全屏状态优化 */
-:-webkit-full-screen #bilibili-player,
-:-moz-full-screen #bilibili-player,
-:fullscreen #bilibili-player {
-  width: 100vw !important;
-  height: 100vh !important;
-  background: #000 !important;
-}
-
-/* 控制按钮 */
+/* 控制按钮
 .focus-control-bar {
   position: fixed;
   top: 15px;
@@ -104,7 +191,7 @@ html.focus-mode ::-webkit-scrollbar {
   z-index: 999999;
   display: flex;
   gap: 10px;
-}
+} */
 
 .focus-control-button {
   background: rgba(0, 0, 0, 0.7);
@@ -134,20 +221,6 @@ html.focus-mode ::-webkit-scrollbar {
   z-index: 999999;
 }
 
-/* 播放速度指示器 */
-.focus-mode-speed-indicator {
-  position: fixed;
-  bottom: 70px;
-  right: 20px;
-  background-color: rgba(0, 0, 0, 0.7);
-  color: white;
-  padding: 8px 12px;
-  border-radius: 4px;
-  font-size: 14px;
-  z-index: 10002;
-  transition: opacity 0.5s ease;
-}
-
 /* 提醒语样式 */
 .focus-mode-reminder {
   position: fixed;
@@ -160,117 +233,13 @@ html.focus-mode ::-webkit-scrollbar {
   border-radius: 8px;
   font-size: 16px;
   z-index: 1000001;
-  opacity: 1;
+  opacity: 0;
   transition: opacity 0.5s;
   text-align: center;
 }
 
-/* 侧边栏样式 */
-.focus-collection-sidebar {
-  position: fixed;
-  top: 0;
-  right: 0;
-  width: 280px;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.85);
-  color: #fff;
-  z-index: 999999;
-  transition: transform 0.3s ease;
-  overflow-y: auto;
-  padding: 15px 0;
-  backdrop-filter: blur(5px);
-  box-shadow: -2px 0 5px rgba(0, 0, 0, 0.2);
-}
-
-.focus-collection-sidebar.collapsed {
-  transform: translateX(280px);
-}
-
-.sidebar-toggle {
-  position: fixed;
-  top: 50%;
-  right: 280px;
-  transform: translateY(-50%);
-  background: rgba(0, 0, 0, 0.85);
-  color: #fff;
-  width: 20px;
-  height: 60px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  z-index: 999999;
-  border-radius: 4px 0 0 4px;
-  transition: right 0.3s ease;
-}
-
-.sidebar-toggle.collapsed {
-  right: 0;
-}
-
-.sidebar-toggle:hover {
-  background: rgba(36, 148, 204, 0.85);
-}
-
-.sidebar-title {
-  font-size: 16px;
-  font-weight: bold;
-  padding: 10px 15px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  margin-bottom: 10px;
-}
-
-.episode-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.episode-item {
-  padding: 10px 15px;
-  cursor: pointer;
-  transition: background 0.2s;
-  display: flex;
-  align-items: center;
-}
-
-.episode-item:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.episode-item.current {
-  background: rgba(36, 148, 204, 0.5);
-  position: relative;
-}
-
-.episode-item.current::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 3px;
-  background: #00a1d6;
-}
-
-.episode-index {
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 50%;
-  margin-right: 10px;
-  font-size: 12px;
-}
-
-.episode-title {
-  flex: 1;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-size: 14px;
+.focus-mode-reminder.visible {
+  opacity: 1;
 }
 
 /* 对话框样式 */
@@ -280,63 +249,118 @@ html.focus-mode ::-webkit-scrollbar {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.7); /* 稍微增加透明度，使对话框更突出 */
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000000;
-  backdrop-filter: blur(4px);
+  z-index: 9999990; /* 确保在其他元素之上但不超过顶层overlay */
+  backdrop-filter: blur(5px);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s ease, visibility 0.25s ease;
+  will-change: opacity, visibility;
+  transform: translateZ(0); /* 强制GPU加速，减少抖动 */
+  -webkit-backface-visibility: hidden; /* 优化Safari的渲染 */
+  backface-visibility: hidden;
+}
+
+.dialog-overlay.visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.dialog-overlay.fade-out {
+  opacity: 0;
+  visibility: hidden;
 }
 
 .dialog {
   background: #fff;
-  border-radius: 8px;
-  padding: 24px;
-  width: 500px;
-  max-width: 90vw;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-radius: 16px;
+  padding: 32px;
+  width: 520px;
+  max-width: 85vw;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.18), 0 4px 16px rgba(0, 0, 0, 0.12);
+  opacity: 0;
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: opacity;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  margin: 0;
+  position: relative;
+}
+
+.dialog-overlay.visible .dialog {
+  opacity: 1;
+}
+
+.dialog-overlay.fade-out .dialog {
+  opacity: 0;
 }
 
 .dialog h3 {
-  margin: 0 0 20px;
-  font-size: 20px;
+  margin: 0 0 24px;
+  font-size: 24px;
   font-weight: 600;
   color: #18191c;
+  text-align: center;
+  letter-spacing: 0.3px;
 }
 
 .dialog-buttons {
   display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  margin-top: 24px;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 28px;
 }
 
 .dialog-button {
-  padding: 8px 16px;
-  border-radius: 4px;
-  font-size: 14px;
+  flex: 1;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .dialog-button.primary {
-  background: #00a1d6;
+  background: linear-gradient(135deg, #00a1d6 0%, #0091c2 100%);
   color: #fff;
   border: none;
+  box-shadow: 0 4px 12px rgba(0, 161, 214, 0.3);
 }
 
 .dialog-button.primary:hover {
-  background: #00b5e5;
+  background: linear-gradient(135deg, #0091c2 0%, #007fa8 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 161, 214, 0.4);
+}
+
+.dialog-button.primary:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(0, 161, 214, 0.3);
 }
 
 .dialog-button.secondary {
-  background: #fff;
-  color: #18191c;
-  border: 1px solid #e3e5e7;
+  background: #f5f5f5;
+  color: #666;
+  border: 1px solid #e0e0e0;
 }
 
 .dialog-button.secondary:hover {
-  background: #f4f5f7;
+  background: #e8e8e8;
+  border-color: #d0d0d0;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.dialog-button.secondary:active {
+  transform: translateY(0);
+  background: #e0e0e0;
 }
 
 /* 搜索页面特定优化 */
@@ -405,24 +429,18 @@ body.search-page {
   opacity: 1 !important;
 }
 
-/* 确保视频控制栏可见 */
-.bpx-player-control-wrap,
-.bilibili-player-video-control-wrap,
-.bpx-player-sending-bar,
-.bilibili-player-video-sendbar,
-.bpx-player-ctrl-btn,
-.bilibili-player-video-btn,
-.bpx-player-ctrl-volume,
-.bilibili-player-video-volume,
-.bpx-player-ctrl-quality,
-.bilibili-player-video-quality,
-.bpx-player-video-progress,
-.bilibili-player-video-progress {
-  display: block !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-  z-index: 1000001 !important;
+/* 🎯 极简控制栏交互规则 - 只确保按钮可点击，不干预菜单 */
+body.fullscreen-mode .bpx-player-ctrl-btn,
+body.fullscreen-mode .bpx-player-progress-wrap {
+  pointer-events: auto !important;
+  cursor: pointer !important;
 }
+
+/* ❌ 已移除所有菜单相关的强制规则 - 让B站原生机制完全接管 */
+/* 不再强制设置display、visibility、opacity、z-index等属性 */
+/* B站原生会自动处理菜单的显示、隐藏和层级 */
+
+/* 🎯 播放器容器z-index已在上方设置（第12行），无需重复 */
 
 /* 优化警告提示样式 */
 .focus-warning {
@@ -436,6 +454,12 @@ body.search-page {
   border-radius: 4px;
   font-size: 14px;
   z-index: 10000;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.focus-warning.visible {
+  opacity: 1;
 }
 
 /* 全屏模式下的基础样式 */
@@ -445,146 +469,6 @@ body.page-fullscreen {
 
 html.page-fullscreen-html {
   overflow: hidden !important;
-}
-
-/* 全屏状态优化 */
-:-webkit-full-screen #bilibili-player,
-:-moz-full-screen #bilibili-player,
-:fullscreen #bilibili-player {
-  width: 100vw !important;
-  height: 100vh !important;
-  background: #000 !important;
-}
-
-/* 弹幕相关 - 默认可见 */
-.bpx-player-dm-root, 
-.bpx-player-dm-wrap,
-.bpx-player-dm-container,
-.bpx-player-danmaku,
-.bilibili-player-video-danmaku,
-.bilibili-player-video-danmaku-switch,
-.bpx-player-dm-btn-setting {
-  display: block !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-}
-
-/* 弹幕过滤按钮 */
-.danmaku-filter-button {
-  position: fixed;
-  top: 15px;
-  right: 15px;
-  background: rgba(0, 0, 0, 0.7);
-  color: white;
-  border: none;
-  border-radius: 4px;
-  padding: 8px 15px;
-  cursor: pointer;
-  font-size: 13px;
-  z-index: 999999;
-  transition: background 0.2s;
-}
-
-.danmaku-filter-button:hover {
-  background: rgba(36, 148, 204, 0.8);
-}
-
-/* 过滤弹幕面板 */
-.danmaku-filter-panel {
-  position: fixed;
-  top: 60px;
-  right: 15px;
-  background: rgba(0, 0, 0, 0.8);
-  color: white;
-  border-radius: 4px;
-  padding: 15px;
-  width: 300px;
-  z-index: 999999;
-  display: none;
-}
-
-.danmaku-filter-panel.active {
-  display: block;
-}
-
-.danmaku-filter-panel h3 {
-  margin-top: 0;
-  margin-bottom: 10px;
-  font-size: 16px;
-}
-
-.danmaku-filter-option {
-  margin-bottom: 8px;
-}
-
-.danmaku-filter-option label {
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-}
-
-.danmaku-filter-option input[type="checkbox"] {
-  margin-right: 8px;
-}
-
-/* 确保视频控制栏可见 */
-.bpx-player-control-wrap,
-.bilibili-player-video-control-wrap,
-.bpx-player-sending-bar,
-.bilibili-player-video-sendbar,
-.bpx-player-ctrl-btn,
-.bilibili-player-video-btn,
-.bpx-player-ctrl-volume,
-.bilibili-player-video-volume,
-.bpx-player-ctrl-quality,
-.bilibili-player-video-quality,
-.bpx-player-video-progress,
-.bilibili-player-video-progress {
-  display: block !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-  z-index: 1000001 !important;
-}
-
-/* 弹幕过滤样式 */
-.danmaku-filtered .bpx-player-dm-root, 
-.danmaku-filtered .bpx-player-dm-wrap,
-.danmaku-filtered .bpx-player-dm-container,
-.danmaku-filtered .bpx-player-danmaku,
-.danmaku-filtered .bilibili-player-video-danmaku,
-.danmaku-filtered .bilibili-player-video-danmaku-switch,
-.danmaku-filtered .bpx-player-dm-btn-setting,
-.danmaku-filtered .dm-wrap,
-.danmaku-filtered .bpx-player-dm-area,
-.danmaku-filtered .bpx-player-video-danmaku-wrap {
-  display: none !important;
-}
-
-/* 降低弹幕透明度 */
-.danmaku-opacity-reduced .bpx-player-dm-root, 
-.danmaku-opacity-reduced .bpx-player-dm-wrap,
-.danmaku-opacity-reduced .bpx-player-dm-container,
-.danmaku-opacity-reduced .bpx-player-danmaku,
-.danmaku-opacity-reduced .bilibili-player-video-danmaku,
-.danmaku-opacity-reduced .bilibili-player-video-danmaku-switch,
-.danmaku-opacity-reduced .bpx-player-dm-btn-setting,
-.danmaku-opacity-reduced .dm-wrap,
-.danmaku-opacity-reduced .bpx-player-dm-area {
-  opacity: 0.3 !important;
-}
-
-/* 过滤彩色弹幕 */
-.danmaku-color-filtered .danmaku-item[style*="color"]:not([style*="color: #ffffff"]):not([style*="color: white"]):not([style*="color: rgb(255, 255, 255)"]),
-.danmaku-color-filtered .danmaku-item[style*="background"] {
-  display: none !important;
-}
-
-/* 过滤长文本弹幕 */
-.danmaku-length-filtered .danmaku-item {
-  max-width: 100px !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-  white-space: nowrap !important;
 }
 
 /* 修复搜索结果页面的样式 */
@@ -609,4 +493,192 @@ html.page-fullscreen-html {
   display: block !important;
   visibility: visible !important;
   opacity: 1 !important;
-} 
+}
+
+/* 🎯 清理：移除重复的注释代码，保持控制栏交互功能 */
+
+/* 🎯 清理完成：保留核心控制栏交互功能 */
+
+/* 新增: 强化对话框居中显示 */
+/* ✅ 修复：使用 flexbox 居中，响应式支持所有屏幕尺寸 */
+.top-level-exit-overlay .dialog,
+.exit-transition-overlay .dialog {
+  /* 移除 absolute 定位，让父容器的 flex 布局自然居中 */
+  position: relative !important;
+  margin: 0 !important;
+  /* 禁用所有可能导致晃动的过渡效果 */
+  transition: opacity 0.25s ease !important;
+  will-change: opacity !important;
+}
+
+/* 保留旧的定位方式用于其他对话框
+.partial-exit-overlay .dialog,
+.focus-exit-dialog {
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  margin: 0 !important;
+  transition: opacity 0.25s ease !important;
+  will-change: opacity !important;
+} */
+
+/* ✅ 删除媒体查询：max-width 已经自动响应式处理 */
+
+/* 🧹 已清理：重复的控制栏规则 */
+
+/* 🧹 已清理：B站播放器控件规则 - 让B站原生机制完全接管菜单显示 */
+
+/* 防止所有对话框和弹窗的晃动效果 */
+.dialog-overlay, 
+.top-level-exit-overlay, 
+.partial-exit-overlay, 
+.exit-transition-overlay {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dialog,
+.focus-mode-reminder,
+[class*="-dialog"],
+[class*="dialog-"] {
+  /* 统一对话框的显示方式，确保所有对话框在显示前就已经定位在页面中央 */
+  /* 注意：.focus-exit-dialog 已移至 exit-handler.css 中独立管理 */
+  position: relative;
+  transition: opacity 0.25s ease !important;
+  transform: none !important;
+  /* 禁用所有可能造成位置变化的CSS属性 */
+  animation: none !important;
+  transform-origin: center center !important;
+}
+
+/* 移除所有可能导致视觉晃动的transform过渡效果 */
+[class*="dialog"].visible,
+[class*="dialog"].active,
+[class*="dialog"].show,
+[class*="overlay"].visible .dialog,
+[class*="overlay"].active .dialog,
+[class*="overlay"].show .dialog {
+  transform: none !important;
+  animation: none !important;
+}
+
+/* 快速回到全屏学习模式的按钮 */
+.back-to-fullscreen-btn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: rgba(0, 161, 214, 0.8);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  font-size: 20px;
+  cursor: pointer;
+  z-index: 999999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+.back-to-fullscreen-btn:hover {
+  background: rgba(0, 161, 214, 1);
+  transform: scale(1.05);
+}
+
+.back-to-fullscreen-btn.hidden {
+  opacity: 0;
+  visibility: hidden;
+  transform: scale(0.8);
+}
+
+/* 弹窗居中样式已在 focus-dialogs.css 中统一定义，此处不再重复 */
+
+/* 确保B站的Toast提示也居中显示 */
+.bili-toast,
+.bili-message,
+.bili-message__content,
+.bilibili-player-video-toast-item,
+.bilibili-player-video-toast-bottom {
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  margin-left: 0 !important;
+}
+
+/* 🎯 第二次清理：移除更多注释掉的无效控制栏代码 */
+
+/* 屏蔽弹幕按钮 - 包含所有可能的弹幕按钮选择器 */
+.bpx-player-ctrl-danmaku,
+.bilibili-player-video-danmaku-switch,
+.bpx-player-dm-switch,
+.bilibili-player-video-danmaku-root .bilibili-player-video-danmaku-switch,
+.bpx-player-dm-btn-send,
+.bpx-player-dm-btn-send-lite,
+.bpx-player-video-inputbar,
+.bpx-player-dm-setting,
+.bpx-player-dm-btn-setting {
+  display: none !important;
+}
+
+/* 完全隐藏弹幕显示区域 - 在全屏和非全屏模式下都有效 */
+.bpx-player-dm-root,
+.bpx-player-dm-wrap,
+.bpx-player-dm-container,
+.bpx-player-danmaku,
+.bpx-player-dm-area,
+.bpx-player-row-dm-wrap,
+.bilibili-player-video-danmaku,
+.bilibili-player-video-danmaku-root,
+.bilibili-player-video-danmaku-container,
+.bilibili-player-dm-tip-wrap,
+.dm-wrap {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+}
+
+/* 隐藏单个弹幕元素（额外保险） */
+.danmaku-item,
+.bpx-player-dm-item,
+.bilibili-player-video-danmaku-item,
+.dm-info-row,
+.dm-info-dm {
+  display: none !important;
+}
+
+/* 🎯 清理重复规则 - 已在上方统一处理菜单交互 */
+/* 以上规则已整合到温和修复方案中，避免重复和冲突 */
+
+/* [REMOVED] 不再强制控制栏显示，让B站完全接管 */
+/* .bpx-player-container .bpx-player-control-wrap - 已移除所有强制规则 */
+
+/* [REMOVED] 不再在全屏模式下强制控制栏显示，让B站完全接管 */
+/* body.fullscreen-mode .bpx-player-control-wrap - 已移除所有强制规则 */
+
+/* 修复进度条交互 */
+body.fullscreen-mode .bpx-player-progress-wrap,
+body.fullscreen-mode .bilibili-player-video-progress-wrap {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+
+/* 🚫 已移除紧急修复样式 - 避免与B站原生机制冲突 */
+/* 控制栏的z-index和pointer-events现在由B站管理 */
+
+/* 🚫 已移除控制栏按钮紧急修复 - B站自主管理按钮状态 */
+/* 所有按钮的样式、交互和层级现在由B站原生系统控制 */
+
+/* 🎯 终极修复：使用最高优先级强制显示所有菜单 */
+/* 不依赖bpx-state-show，直接强制显示所有菜单和子元素 */
+
+/* 🎯 让B站完全接管菜单显示逻辑 - 不再强制覆盖 */
+/* B站会通过hover自动管理菜单和菜单项的内联样式 */
+/* 我们只确保容器和基础样式不会阻碍菜单显示 */
+
+/* ❌ 已移除所有强制显示菜单的规则 */
+/* 原因：我们的 !important 规则阻止了B站动态修改内联样式 */
+/* B站需要自己控制 display, opacity, transform 等属性来实现动画效果 */

@@ -1,9 +1,24 @@
 /**
  * 首页专注搜索类
  * 替换B站首页为专注学习界面，提供简洁的搜索和合集管理
+ * 增强功能：同时优化搜索页面体验
  */
 (function() {
   'use strict';
+  
+  // 安全的日志函数
+const safeLog = (module, message, level = 'info', data = '') => {
+  if (typeof Logger !== 'undefined' && typeof Logger.log === 'function') {
+    Logger.log(module, message, level, data);
+  } else {
+    console.log(`[${module}] ${message}`, data);
+  }
+};
+
+safeLog('页面优化', 'focused-homepage.js 开始加载 - ' + new Date().toISOString());
+  window.FOCUSED_HOMEPAGE_LOADED = true; // 设置一个全局标记
+  
+  safeLog('页面优化', 'focused-homepage.js 已加载');
   
   // 立即执行的自调用函数，在document_start阶段立即拦截
   const immediateInitializer = function() {
@@ -12,14 +27,32 @@
     
     console.log('[专注模式] 即时拦截B站首页加载');
     
-    // 在最早期阻止页面渲染原始内容
-    blockOriginalContent();
+    // 检查关键依赖
+    const checkDependencies = () => {
+      if (typeof window.StorageUtils === 'undefined' || typeof window.UIUtils === 'undefined') {
+        console.log('[专注模式] 等待依赖加载...');
+        setTimeout(checkDependencies, 50);
+        return;
+      }
+      
+      // 依赖已加载，继续初始化
+      console.log('[专注模式] 依赖已加载，继续初始化');
+      
+      // 在最早期阻止页面渲染原始内容
+      blockOriginalContent();
+      
+      // 阻止所有非必要的资源加载
+      setupResourceBlocker();
+      
+      // 设置DOM变更监控，防止B站重新渲染
+      setupMutationGuard();
+      
+      // 优化: 添加强制渲染专注模式界面
+      forceRenderFocusedInterface();
+    };
     
-    // 阻止所有非必要的资源加载
-    setupResourceBlocker();
-    
-    // 设置DOM变更监控，防止B站重新渲染
-    setupMutationGuard();
+    // 开始检查依赖
+    checkDependencies();
   }();
   
   // 检查当前URL是否是B站首页
@@ -39,7 +72,7 @@
     style.id = 'focused-homepage-blocker';
     style.textContent = `
       /* 隐藏所有非关键元素 */
-      html > body > *:not(#focused-placeholder):not(.focused-homepage-container):not(style):not(script) {
+      html > body > *:not(#focused-placeholder):not(.focused-homepage-container):not(.dialog-overlay):not(style):not(script) {
         display: none !important;
         opacity: 0 !important;
         visibility: hidden !important;
@@ -66,6 +99,15 @@
         opacity: 1 !important;
         visibility: visible !important;
         min-height: 100vh !important;
+      }
+      
+      /* 提高CSS优先级，防止被B站样式覆盖 */
+      #biliMainHeader, #internationalHeader, .bili-header, .international-header, 
+      .bili-header__bar, .channel-nav {
+        display: none !important;
+        height: 0 !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
       }
     `;
     
@@ -319,6 +361,12 @@
   function setupMutationGuard() {
     if (!window.MutationObserver) return;
     
+    // 🎯 安全检查：只在首页执行
+    if (!isHomepage()) {
+      console.log('[专注模式] 非首页，跳过MutationGuard设置');
+      return;
+    }
+    
     const guard = new MutationObserver((mutations) => {
       for (const mutation of mutations) {
         if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
@@ -404,7 +452,7 @@
     static initialize() {
       // 检查是否是首页
       if (FocusedHomepage.isHomepage()) {
-        console.log('[专注模式] 检测到B站首页，准备拦截');
+        safeLog('页面优化', '检测到B站首页，准备拦截');
         
         // 立即添加样式隐藏原始内容，最大程度避免闪烁
         FocusedHomepage.addEarlyStyles();
@@ -423,7 +471,20 @@
         return true;
       }
       
-      // 为所有页面添加URL变化监听，确保在从其他页面返回首页时能够触发拦截
+      // 检查是否是搜索页面
+      if (FocusedHomepage.isSearchPage()) {
+        safeLog('页面优化', '检测到B站搜索页面，准备优化');
+        
+        // 创建实例并初始化搜索页面优化
+        if (!window.focusedHomepage) {
+          window.focusedHomepage = new FocusedHomepage();
+          window.focusedHomepage.initializeSearchOptimizer();
+        }
+        
+        return true;
+      }
+      
+      // 为所有页面添加URL变化监听，确保在从其他页面返回首页或搜索页时能够触发拦截
       FocusedHomepage.setupNavigationMonitor();
       
       return false;
@@ -440,6 +501,14 @@
              url === 'https://bilibili.com/' ||
              url === 'https://bilibili.com/index.html' ||
              url.match(/^https?:\/\/(www\.)?bilibili\.com\/?(\?.*)?$/);
+    }
+    
+    /**
+     * 检查当前URL是否是B站搜索页面
+     * @returns {boolean} 是否是搜索页面
+     */
+    static isSearchPage() {
+      return window.location.href.includes('search.bilibili.com');
     }
     
     /**
@@ -627,7 +696,7 @@
     static checkAfterNavigation() {
       setTimeout(() => {
         if (FocusedHomepage.isHomepage()) {
-          console.log('[专注模式] 导航到首页，激活专注模式');
+          safeLog('页面优化', '导航到首页，激活专注模式');
           
           // 如果导航到首页，立即清空可能存在的内容
           FocusedHomepage.clearExistingContent();
@@ -639,6 +708,19 @@
             }
           } else {
             window.focusedHomepage = new FocusedHomepage();
+          }
+        }
+        
+        // 检查是否导航到了搜索页面
+        if (FocusedHomepage.isSearchPage()) {
+          safeLog('页面优化', '导航到搜索页面，准备优化');
+          
+          // 如果已有实例但页面已改变，尝试重新初始化
+          if (window.focusedHomepage) {
+            window.focusedHomepage.initializeSearchOptimizer();
+          } else {
+            window.focusedHomepage = new FocusedHomepage();
+            window.focusedHomepage.initializeSearchOptimizer();
           }
         }
       }, 50);
@@ -662,8 +744,24 @@
           background-color: #f6f7f8 !important;
         }
         
-        /* 使用通配符选择器强制隐藏所有B站原始内容元素 */
-        body > *:not(#focused-early-styles):not(.focused-homepage-container):not(.dialog-overlay):not(style):not(script) {
+        /* 🔧 安全的内容隐藏 - 精确选择器避免误伤播放器 */
+        /* 明确指定要隐藏的B站首页元素，避免通配符误伤 */
+        #app:not([class*="player"]):not([id*="player"]),
+        #i_cecream:not([class*="player"]):not([id*="player"]),
+        .bili-header:not([class*="player"]):not([id*="player"]),
+        .bili-layout:not([class*="player"]):not([id*="player"]),
+        .bili-feed:not([class*="player"]):not([id*="player"]),
+        .bili-footer:not([class*="player"]):not([id*="player"]),
+        .international-header:not([class*="player"]):not([id*="player"]),
+        .bili-wrapper:not([class*="player"]):not([id*="player"]),
+        .bili-container:not([class*="player"]):not([id*="player"]),
+        .bili-video-card:not([class*="player"]):not([id*="player"]),
+        .feed-card:not([class*="player"]):not([id*="player"]),
+        .bili-banner:not([class*="player"]):not([id*="player"]),
+        .tab-bar:not([class*="player"]):not([id*="player"]),
+        .bili-grid:not([class*="player"]):not([id*="player"]),
+        .nav-item:not([class*="player"]):not([id*="player"]),
+        .search-wrapper:not([class*="player"]):not([id*="player"]) {
           display: none !important;
           opacity: 0 !important;
           visibility: hidden !important;
@@ -676,11 +774,52 @@
           z-index: -9999 !important;
         }
         
-        /* 特定针对B站常见容器的强化隐藏 */
-        #app, #i_cecream, .bili-header, .bili-layout, .bili-feed, .bili-footer, 
-        .international-header, .bili-wrapper, .bili-container, #bili-header-container,
-        .bili-video-card, .feed-card, .bili-banner, .tab-bar, .bili-grid, #internationalHeader,
-        .bili-feed-card, .floor-single-card, .canvas-cover {
+        /* 🔒 绝对保护播放器相关元素 - 防止任何意外隐藏 */
+        .bpx-player-container,
+        .bpx-player-control-wrap,
+        .bpx-player-control-entity,
+        .bpx-player-video-control,
+        .bpx-player-video-control-wrap,
+        .bilibili-player-video-control-wrap,
+        #bilibili-player,
+        .player-container,
+        .bilibili-player-area,
+        [class*="bpx-player"],
+        [id*="player"],
+        [class*="player-ctrl"],
+        [class*="control-wrap"] {
+          display: revert !important;
+          opacity: revert !important;
+          visibility: revert !important;
+          pointer-events: revert !important;
+          height: revert !important;
+          width: revert !important;
+          position: revert !important;
+          left: revert !important;
+          overflow: revert !important;
+          z-index: revert !important;
+        }
+        
+        /* 🎯 首页特定元素强化隐藏 - 更全面的首页元素列表 */
+        #app:not([class*="player"]):not([id*="player"]),
+        #i_cecream:not([class*="player"]):not([id*="player"]),
+        .bili-header:not([class*="player"]):not([id*="player"]),
+        .bili-layout:not([class*="player"]):not([id*="player"]),
+        .bili-feed:not([class*="player"]):not([id*="player"]),
+        .bili-footer:not([class*="player"]):not([id*="player"]),
+        .international-header:not([class*="player"]):not([id*="player"]),
+        .bili-wrapper:not([class*="player"]):not([id*="player"]),
+        .bili-container:not([class*="player"]):not([id*="player"]),
+        #bili-header-container:not([class*="player"]):not([id*="player"]),
+        .bili-video-card:not([class*="player"]):not([id*="player"]),
+        .feed-card:not([class*="player"]):not([id*="player"]),
+        .bili-banner:not([class*="player"]):not([id*="player"]),
+        .tab-bar:not([class*="player"]):not([id*="player"]),
+        .bili-grid:not([class*="player"]):not([id*="player"]),
+        #internationalHeader:not([class*="player"]):not([id*="player"]),
+        .bili-feed-card:not([class*="player"]):not([id*="player"]),
+        .floor-single-card:not([class*="player"]):not([id*="player"]),
+        .canvas-cover:not([class*="player"]):not([id*="player"]) {
           display: none !important;
           opacity: 0 !important;
           visibility: hidden !important;
@@ -719,7 +858,7 @@
       placeholderDiv.style.display = 'none';
       document.body.appendChild(placeholderDiv);
       
-      console.log('[专注模式] 已添加早期样式拦截');
+      console.log('[专注模式] ✅ 已添加安全的早期样式拦截（已保护播放器元素）');
     }
 
     /**
@@ -732,6 +871,19 @@
       this.initialized = false;
       this.observer = null;
       this._eventListenersAttached = false; // 跟踪事件监听器是否已添加
+      this.keyboardEventHandler = null; // 添加键盘事件处理器引用
+      
+      // 搜索页面相关属性
+      this.searchInitialized = false;
+      this.searchObserver = null;
+      this.searchSelectors = {
+        searchContainer: ['.search-container', '#server-search-app', '.search-page'],
+        resultList: ['.search-content', '.video-list', '.search-page-wrapper'],
+        rightContainer: ['.right-container', '.search-right-module', '.search-sidebar'],
+        leftContainer: ['.left-container', '.search-content', '.search-result-container'],
+        videoCards: ['.bili-video-card', '.video-item', '.search-video-card'],
+        titleElement: ['.bili-video-card__info--tit', '.title', '.video-title', 'a.title']
+      };
       
       // 使用延迟初始化
       this.init = this.init.bind(this);
@@ -745,13 +897,23 @@
       // 尽早初始化
       if (document.readyState === 'loading') {
         // 如果页面还在加载，则等待DOMContentLoaded事件
-        document.addEventListener('DOMContentLoaded', () => this.init());
+        document.addEventListener('DOMContentLoaded', () => {
+          if (FocusedHomepage.isHomepage()) {
+            this.init();
+          } else if (FocusedHomepage.isSearchPage()) {
+            this.initializeSearchOptimizer();
+          }
+        });
         
         // 添加早期样式，避免原首页闪烁
         FocusedHomepage.addEarlyStyles();
       } else {
         // 页面已加载，立即初始化
-        this.init();
+        if (FocusedHomepage.isHomepage()) {
+          this.init();
+        } else if (FocusedHomepage.isSearchPage()) {
+          this.initializeSearchOptimizer();
+        }
       }
     }
     
@@ -865,28 +1027,56 @@
      * @param {boolean} force - 是否强制重新初始化
      */
     init(force = false) {
-      // 如果已初始化且非强制，则跳过
-      if (this.initialized && !force) return;
+      // 避免重复初始化
+      if (this.initialized && !force) {
+        return;
+      }
       
-      console.log('[专注模式] 开始初始化首页专注模式');
-      this.initialized = true;
-
-      // 先添加完整样式
-      this.addStyles();
+      // 移除设置检查逻辑，让首页正常加载
+      // 首页现在会在加载完成后再显示设置引导
       
-      // 立即隐藏原内容
+      console.log('[专注模式] 初始化专注界面');
+      
+      try {
+        // 使用一个非阻塞的方式初始化界面
+        setTimeout(() => {
+          // 隐藏原始内容
       this.hideOriginalContent();
       
-      // 创建专注界面（分批执行DOM操作，提高响应速度）
-      setTimeout(() => this.createFocusedInterface(), 10);
+      // 创建专注界面
+      this.createFocusedInterface();
       
-      // 加载并渲染收藏合集
-      setTimeout(() => {
-        this.loadCollections().then(() => {
-          this.renderCollections();
-          this.setupEventListeners();
-        });
-      }, 100);
+      // 添加样式
+      this.addStyles();
+      
+          // 加载收藏的集合
+          this.loadCollections()
+            .then(() => {
+              // 渲染合集
+              this.renderCollections();
+              
+              // 设置事件监听器
+      this.setupEventListeners();
+              
+              this.initialized = true;
+              console.log('[专注模式] 专注界面初始化完成');
+            })
+            .catch(err => {
+              console.error('[专注模式] 加载合集失败:', err);
+              
+              // 即使加载失败，也标记为已初始化
+              this.initialized = true;
+              
+              // 创建空容器
+        this.renderCollections();
+      });
+        }, 0);
+      } catch (err) {
+        console.error('[专注模式] 初始化专注界面失败:', err);
+      
+        // 出错时尝试创建最小界面
+        this.createFocusedInterface();
+      }
     }
 
     /**
@@ -1051,6 +1241,27 @@
         
         collectionHeader.appendChild(addButton);
 
+        // 添加设置按钮
+        const settingsButton = document.createElement('button');
+        settingsButton.className = 'settings-button';
+        settingsButton.title = '设置密码和提醒语';
+        settingsButton.innerHTML = `
+          <svg viewBox="0 0 24 24" class="settings-icon" aria-hidden="true">
+            <path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.82,11.69,4.82,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/>
+          </svg>
+          <span>设置</span>
+        `;
+        
+        // 为设置按钮添加点击事件
+        settingsButton.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          console.log('[专注模式] 设置按钮被点击');
+          GlobalSettingsManager.handleGlobalSettings();
+        });
+        
+        collectionHeader.appendChild(settingsButton);
+
         // 创建合集容器
         const collectionsContainer = document.createElement('div');
         collectionsContainer.className = 'collections-container';
@@ -1065,9 +1276,9 @@
           fallbackContainer.className = 'focused-homepage-container';
           fallbackContainer.innerHTML = `
             <div style="text-align: center; padding: 50px 20px;">
-              <h1 style="color: #00a1d6;">B站专注学习模式</h1>
+              <h1 style="color: #00a1d6;">B站专注学习助手</h1>
               <p style="color: #666;">创建界面时出错，请刷新页面重试</p>
-              <button onclick="location.reload()" style="background: #00a1d6; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin-top: 20px;">刷新页面</button>
+              <button onclick="location.reload()" style="background: #00a1d6; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; margin-top: 20px;">刷新页面</button>
             </div>
           `;
           document.body.appendChild(fallbackContainer);
@@ -1085,7 +1296,7 @@
         body {
           margin: 0;
           padding: 0;
-          background: #f6f7f8;
+          background: #f1f2f3;
           text-size-adjust: 100%;
           -webkit-text-size-adjust: 100%;
           -moz-text-size-adjust: 100%;
@@ -1094,9 +1305,9 @@
 
         /* 容器样式 */
         .focused-homepage-container {
-          max-width: 1200px;
+          max-width: 1280px;
           margin: 0 auto;
-          padding: 40px 20px;
+          padding: 10px;
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
           opacity: 0;
           transform: translateY(20px);
@@ -1112,41 +1323,43 @@
 
         /* 搜索区域样式 */
         .focused-search-section {
-          margin-bottom: 48px;
+          margin-bottom: 20px;
+          text-align: center;
         }
 
         .focused-title {
-          font-size: 32px;
+          font-size: 28px;
           font-weight: 600;
           color: #18191c;
-          margin-bottom: 32px;
+          margin-bottom: 24px;
           text-align: center;
         }
 
         .focused-search-box {
           display: flex;
-          max-width: 600px;
+          max-width: 640px;
           margin: 0 auto;
           background: #fff;
           border-radius: 8px;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
           overflow: hidden;
-          transition: all 0.3s ease;
+          transition: all 0.2s ease;
           will-change: transform, box-shadow;
+          border: 1px solid #e3e5e7;
         }
 
         .focused-search-box:hover {
           transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
         .focused-search-input {
           flex: 1;
-          padding: 16px 20px;
+          padding: 12px 16px;
           font-size: 16px;
           border: none;
           outline: none;
-          transition: background-color 0.3s ease;
+          transition: background-color 0.2s ease;
         }
 
         .focused-search-input:focus {
@@ -1154,11 +1367,11 @@
         }
 
         .focused-search-button {
-          padding: 0 24px;
+          width: 48px;
           background: #00a1d6;
           border: none;
           cursor: pointer;
-          transition: all 0.3s ease;
+          transition: all 0.2s ease;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -1169,105 +1382,188 @@
         }
 
         .search-icon {
-          width: 24px;
-          height: 24px;
+          width: 20px;
+          height: 20px;
           fill: #fff;
         }
 
         /* 合集区域样式 */
         .focused-collections-section {
-          margin-top: 48px;
+          margin-top: 10px;
         }
 
         .collections-header {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          margin-bottom: 24px;
+          margin-bottom: 16px;
           position: sticky;
           top: 0;
-          background-color: #f6f7f8;
-          padding: 10px 0;
+          background-color: #f1f2f3;
+          padding: 8px 0;
           z-index: 10;
+          gap: 10px;
         }
 
         .collections-title {
-          font-size: 24px;
+          font-size: 20px;
           font-weight: 600;
           color: #18191c;
           margin: 0;
+          position: relative;
+          padding-left: 12px;
+        }
+        
+        .collections-title:before {
+          content: '';
+          position: absolute;
+          left: 0;
+          top: 50%;
+          transform: translateY(-50%);
+          width: 4px;
+          height: 18px;
+          background-color: #00a1d6;
+          border-radius: 2px;
         }
 
         .add-collection-button {
           display: flex;
           align-items: center;
-          padding: 12px 24px;
+          padding: 8px 16px;
           background: #00a1d6 !important;
           color: #fff !important;
           border: none;
           border-radius: 4px;
           cursor: pointer;
-          font-size: 16px;
-          transition: all 0.3s ease;
+          font-size: 14px;
+          transition: all 0.2s ease;
           will-change: transform;
-          box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+          box-shadow: 0 2px 4px rgba(0, 161, 214, 0.2);
           position: relative;
           z-index: 20;
-          min-width: 140px;
+          min-width: 120px;
         }
 
         .add-collection-button:hover {
           background: #00b5e5 !important;
           color: #fff !important;
           transform: translateY(-2px);
-          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+          box-shadow: 0 4px 8px rgba(0, 161, 214, 0.25);
         }
 
         .add-collection-button:active {
           transform: translateY(0);
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+          box-shadow: 0 2px 4px rgba(0, 161, 214, 0.2);
         }
 
         .add-icon {
-          width: 20px;
-          height: 20px;
+          width: 16px;
+          height: 16px;
           fill: #fff;
-          margin-right: 8px;
+          margin-right: 6px;
+        }
+
+        /* 设置按钮样式 */
+        .settings-button {
+          display: flex;
+          align-items: center;
+          padding: 8px 16px;
+          background: #666 !important;
+          color: #fff !important;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+          font-size: 14px;
+          transition: all 0.2s ease;
+          will-change: transform;
+          box-shadow: 0 2px 4px rgba(102, 102, 102, 0.2);
+          position: relative;
+          z-index: 20;
+          min-width: 100px;
+        }
+
+        .settings-button:hover {
+          background: #555 !important;
+          color: #fff !important;
+          transform: translateY(-2px);
+          box-shadow: 0 4px 8px rgba(102, 102, 102, 0.25);
+        }
+
+        .settings-button:active {
+          transform: translateY(0);
+          box-shadow: 0 2px 4px rgba(102, 102, 102, 0.2);
+        }
+
+        .settings-icon {
+          width: 16px;
+          height: 16px;
+          fill: #fff;
+          margin-right: 6px;
+        }
+
+        /* 按钮容器样式 - 让按钮在右侧并排 */
+        .collections-header > .collections-title {
+          flex: 1;
+        }
+
+        .collections-header > .add-collection-button,
+        .collections-header > .settings-button {
+          flex-shrink: 0;
         }
 
         /* 合集网格样式 */
         .collections-container {
           display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-          gap: 24px;
+          grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+          gap: 16px;
           opacity: 0;
           transform: translateY(20px);
           animation: fadeInUp 0.5s ease forwards 0.3s;
           min-height: 100px;
+          padding-bottom: 40px;
         }
 
-        /* 合集卡片样式 */
+        /* 合集卡片样式 - B站风格 */
         .collection-card {
           background: #fff;
           border-radius: 8px;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
           overflow: hidden;
-          transition: all 0.3s ease;
+          transition: all 0.2s ease;
           will-change: transform, box-shadow;
           cursor: pointer;
           width: 100%;
           width: -webkit-fill-available;
           width: -moz-available;
           width: stretch;
+          border: 1px solid #e3e5e7;
+          position: relative;
         }
 
         .collection-card:hover {
           transform: translateY(-4px);
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+          border-color: #d0d3d7;
+        }
+        
+        .collection-card:before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 4px;
+          background: linear-gradient(90deg, #00a1d6, #00b5e5);
+          opacity: 0;
+          transition: opacity 0.2s ease;
+        }
+        
+        .collection-card:hover:before {
+          opacity: 1;
         }
 
         .collection-content {
-          padding: 16px;
+          padding: 14px;
           user-select: none;
           -webkit-user-select: none;
           -moz-user-select: none;
@@ -1275,16 +1571,21 @@
         }
 
         .collection-title {
-          font-size: 18px;
+          font-size: 16px;
           font-weight: 600;
           color: #18191c;
           margin: 0 0 8px;
           line-height: 1.4;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
         }
 
         .collection-description {
           color: #61666d;
-          font-size: 14px;
+          font-size: 13px;
           line-height: 1.5;
           margin: 0;
           display: -webkit-box;
@@ -1296,13 +1597,43 @@
         }
 
         .collection-meta {
-          padding: 12px 16px;
+          padding: 10px 14px;
           border-top: 1px solid #f4f5f7;
           color: #9499a0;
-          font-size: 13px;
+          font-size: 12px;
           display: flex;
           justify-content: space-between;
           align-items: center;
+        }
+        
+        .collection-meta a.dialog-button.primary {
+          background: #00a1d6;
+          color: #fff;
+          padding: 4px 10px;
+          border-radius: 4px;
+          text-decoration: none;
+          font-size: 12px;
+          transition: all 0.2s;
+        }
+        
+        .collection-meta a.dialog-button.primary:hover {
+          background: #00b5e5;
+        }
+        
+        .collection-meta button.collection-delete-btn {
+          background: transparent;
+          color: #9499a0;
+          border: 1px solid #e3e5e7;
+          padding: 3px 8px;
+          border-radius: 4px;
+          cursor: pointer;
+          font-size: 12px;
+          transition: all 0.2s;
+        }
+        
+        .collection-meta button.collection-delete-btn:hover {
+          color: #00a1d6;
+          border-color: #00a1d6;
         }
 
         /* 对话框样式 */
@@ -1330,8 +1661,8 @@
         .dialog {
           background: #fff;
           border-radius: 8px;
-          padding: 24px;
-          width: 500px;
+          padding: 20px;
+          width: 450px;
           max-width: 90vw;
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
           transform: translateY(20px);
@@ -1345,31 +1676,47 @@
         }
 
         .dialog h3 {
-          margin: 0 0 20px;
-          font-size: 20px;
+          margin: 0 0 16px;
+          font-size: 18px;
           font-weight: 600;
           color: #18191c;
+          position: relative;
+          padding-left: 12px;
+        }
+        
+        .dialog h3:before {
+          content: '';
+          position: absolute;
+          left: 0;
+          top: 50%;
+          transform: translateY(-50%);
+          width: 4px;
+          height: 16px;
+          background-color: #00a1d6;
+          border-radius: 2px;
         }
 
         .dialog-form-group {
-          margin-bottom: 16px;
+          margin-bottom: 14px;
         }
 
         .dialog-form-group label {
           display: block;
-          margin-bottom: 8px;
+          margin-bottom: 6px;
           font-weight: 500;
           color: #18191c;
+          font-size: 14px;
         }
 
         .dialog-form-group input,
         .dialog-form-group textarea {
           width: 100%;
-          padding: 12px;
+          padding: 10px;
           border: 1px solid #e3e5e7;
           border-radius: 4px;
           font-size: 14px;
           transition: all 0.3s ease;
+          box-sizing: border-box;
         }
 
         .dialog-form-group input:focus,
@@ -1383,7 +1730,7 @@
           display: flex;
           justify-content: flex-end;
           gap: 12px;
-          margin-top: 24px;
+          margin-top: 20px;
         }
 
         .dialog-button {
@@ -1391,7 +1738,7 @@
           border-radius: 4px;
           font-size: 14px;
           cursor: pointer;
-          transition: all 0.3s ease;
+          transition: all 0.2s ease;
         }
 
         .dialog-button.primary {
@@ -1412,6 +1759,101 @@
 
         .dialog-button.secondary:hover {
           background: #f4f5f7;
+        }
+        
+        /* 空状态提示样式 */
+        .empty-collections {
+          color: #9499a0;
+          text-align: center;
+          padding: 40px 0;
+          background: #fff;
+          border-radius: 8px;
+          border: 1px solid #e3e5e7;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+        
+        .empty-collections svg {
+          width: 64px;
+          height: 64px;
+          fill: #e3e5e7;
+          margin-bottom: 16px;
+        }
+        
+        .empty-collections p {
+          margin: 0;
+          font-size: 14px;
+        }
+        
+        /* 键盘快捷键提示 */
+        .keyboard-shortcut-hint {
+          position: fixed;
+          bottom: 20px;
+          right: 20px;
+          background: rgba(255, 255, 255, 0.9);
+          border: 1px solid #e3e5e7;
+          border-radius: 4px;
+          padding: 8px 12px;
+          font-size: 12px;
+          color: #61666d;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+          z-index: 100;
+          pointer-events: none;
+          opacity: 0.8;
+          transition: opacity 0.2s;
+        }
+        
+        .keyboard-shortcut-hint:hover {
+          opacity: 1;
+        }
+        
+        .keyboard-shortcut-hint kbd {
+          background: #f4f5f7;
+          border: 1px solid #e3e5e7;
+          border-radius: 3px;
+          padding: 1px 4px;
+          box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+          margin: 0 2px;
+        }
+
+        /* 媒体查询 - 响应式调整 */
+        @media (max-width: 1280px) {
+          .focused-homepage-container {
+            padding: 10px 15px;
+          }
+        }
+        
+        @media (max-width: 768px) {
+          .collections-container {
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+          }
+        }
+        
+        @media (max-width: 480px) {
+          .collections-container {
+            grid-template-columns: 1fr;
+          }
+          
+          .collections-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+          }
+          
+          .add-collection-button,
+          .settings-button {
+            width: 100%;
+            justify-content: center;
+          }
+          
+          .collections-header {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 10px;
+          }
+          
+          .collections-header > .collections-title {
+            text-align: center;
+          }
         }
       `;
 
@@ -1459,14 +1901,77 @@
     }
 
     /**
-     * 处理搜索请求
-     * 跳转到B站搜索页面
+     * 处理搜索功能
+     * 优化的搜索跳转实现
      * @param {string} keyword - 搜索关键词
      */
     handleSearch(keyword) {
       if (!keyword) return;  // 关键词为空则不处理
-      // 跳转到B站搜索页
-      window.location.href = `https://search.bilibili.com/all?keyword=${encodeURIComponent(keyword)}`;
+      
+      try {
+        // 显示加载状态
+        this.showSearchLoading();
+        
+        // 获取输入框和搜索按钮，用于UI反馈
+        const searchInput = document.querySelector('#nav-searchform .nav-search-input, .search-input');
+        const searchBtn = document.querySelector('#nav-searchform .nav-search-btn, .search-button');
+        
+        if (searchBtn) {
+          searchBtn.classList.add('loading');
+          searchBtn.setAttribute('disabled', 'disabled');
+        }
+        
+        // 构建搜索URL
+        const searchUrl = `https://search.bilibili.com/all?keyword=${encodeURIComponent(keyword)}`;
+        
+        // 预加载搜索页面
+        const link = document.createElement('link');
+        link.rel = 'prefetch';
+        link.href = searchUrl;
+        document.head.appendChild(link);
+        
+        // 使用现代导航API (如果支持)
+        if (window.navigation && typeof window.navigation.navigate === 'function') {
+          window.navigation.navigate(searchUrl).catch(() => {
+            // 降级方案：如果导航API失败，使用传统方法
+            window.location.href = searchUrl;
+          });
+        } else {
+          // 使用传统跳转，但添加延迟以便预加载和加载状态显示
+          setTimeout(() => {
+            window.location.href = searchUrl;
+          }, 100);
+        }
+      } catch (err) {
+        console.error('[专注模式] 搜索跳转失败:', err);
+        // 发生错误时降级到传统跳转
+        window.location.href = `https://search.bilibili.com/all?keyword=${encodeURIComponent(keyword)}`;
+      }
+    }
+    
+    /**
+     * 显示搜索加载状态
+     */
+    showSearchLoading() {
+      try {
+        // 创建并显示加载指示器
+        const loadingEl = document.createElement('div');
+        loadingEl.className = 'focus-search-loading';
+        loadingEl.innerHTML = '<span>搜索中...</span>';
+        loadingEl.style.position = 'fixed';
+        loadingEl.style.top = '60px';
+        loadingEl.style.left = '50%';
+        loadingEl.style.transform = 'translateX(-50%)';
+        loadingEl.style.background = 'rgba(0,161,214,0.9)';
+        loadingEl.style.color = '#fff';
+        loadingEl.style.padding = '8px 16px';
+        loadingEl.style.borderRadius = '4px';
+        loadingEl.style.zIndex = '99999';
+        loadingEl.style.boxShadow = '0 2px 8px rgba(0,0,0,0.2)';
+        document.body.appendChild(loadingEl);
+      } catch (err) {
+        console.error('[专注模式] 显示搜索加载状态失败:', err);
+      }
     }
 
     /**
@@ -1957,9 +2462,18 @@
           this.collections = [];
         }
         
-        // 如果没有合集，显示提示信息
+        // 如果没有合集，显示更美观的空状态提示
         if (this.collections.length === 0) {
-          container.innerHTML = '<div style="color:#888;text-align:center;padding:40px 0;">暂无合集，点击上方"添加合集"</div>';
+          container.innerHTML = `
+            <div class="empty-collections">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/>
+                <path d="M14.5 11c.83 0 1.5-.67 1.5-1.5S15.33 8 14.5 8 13 8.67 13 9.5s.67 1.5 1.5 1.5zm-5 2c.83 0 1.5-.67 1.5-1.5S10.33 10 9.5 10 8 10.67 8 11.5 8.67 13 9.5 13z"/>
+                <path d="M14.5 13c-1.03 0-1.98.39-2.7 1.01-.29-.37-.71-.62-1.2-.71-.5-.1-1-.05-1.44.14-.46.18-.84.53-1.09.97C7.46 15.34 7 16.38 7 17.5V18h11v-.5c0-2.48-2.02-4.5-4.5-4.5z"/>
+              </svg>
+              <p>暂无合集，点击上方"添加合集"开始创建</p>
+            </div>
+          `;
           return;
         }
         
@@ -1987,8 +2501,10 @@
               </div>
               <div class="collection-meta">
                 <span>${created}</span>
-                <button class="dialog-button secondary collection-delete-btn" data-idx="${idx}" style="font-size:12px;" title="删除此合集">删除</button>
-                <a href="${url}" target="_blank" class="dialog-button primary" style="font-size:12px;" title="在新标签页中打开合集">打开</a>
+                <div>
+                  <button class="collection-delete-btn" data-idx="${idx}" title="删除此合集">删除</button>
+                  <a href="${url}" target="_blank" class="dialog-button primary" title="在新标签页中打开合集">打开</a>
+                </div>
               </div>
             `;
             
@@ -2292,27 +2808,412 @@
     }
     
     /**
-     * 销毁观察器和事件监听器
-     * 在页面卸载前清理资源
+     * 清理资源，移除所有监听器和DOM元素
      */
     destroy() {
-      // 断开MutationObserver连接
+      // 移除DOM元素
+      const container = document.querySelector('.focused-homepage-container');
+      if (container) {
+        container.remove();
+      }
+      
+      // 移除DOM观察器
       if (this.observer) {
         this.observer.disconnect();
         this.observer = null;
       }
       
-      // 移除事件监听器
-      if (this._eventListenersAttached) {
-        const container = document.querySelector('.collections-container');
-        if (container) {
-          container.removeEventListener('click', this.handleCollectionEvents.bind(this));
-          this._eventListenersAttached = false;
-        }
+      // 移除搜索优化相关资源
+      if (this.searchObserver) {
+        this.searchObserver.disconnect();
+        this.searchObserver = null;
       }
+      
+      // 清理键盘事件监听器
+      if (this.keyboardEventHandler) {
+        document.removeEventListener('keydown', this.keyboardEventHandler);
+        this.keyboardEventHandler = null;
+      }
+      
+      // 重置状态
+      this.initialized = false;
+          this._eventListenersAttached = false;
+      this.searchInitialized = false;
       
       console.log('[专注模式] 已清理资源');
     }
+
+    /**
+     * 初始化搜索页面优化
+     */
+    async initializeSearchOptimizer() {
+      if (this.searchInitialized) return true;
+      
+      try {
+        console.log('[专注模式] 初始化搜索优化');
+        
+        // 使用内置的搜索页面优化
+        this.setupBasicSearchOptimization();
+        this.searchInitialized = true;
+        return true;
+      } catch (err) {
+        console.error('[专注模式] 初始化搜索优化失败:', err);
+        return false;
+      }
+    }
+
+    /**
+     * 设置基础搜索优化实现作为备用
+     */
+    setupBasicSearchOptimization() {
+      console.log('[专注模式] 设置基础搜索优化');
+      
+      // 搜索结果页面简化
+      const searchStyles = `
+        .search-content .video-list .bili-video-card:not([data-v-category*="教育"]):not([data-v-category*="科技"]):not([data-v-category*="知识"]) {
+          opacity: 0.6;
+        }
+        .search-content .channel-items, 
+        .search-content .safe-btn,
+        .search-content .right-container .ad-report,
+        #server-search-app .right-container .ad-report,
+        .search-page .right-container .ad-report,
+        [class*="ad-report"],
+        [class*="bili-advert"] {
+          display: none !important;
+        }
+      `;
+      
+      ensureStylesOnce('basic-search-optimization', searchStyles);
+      
+      // 处理搜索行为
+      document.addEventListener('click', e => {
+        // 查找搜索按钮
+        if (e.target.matches('.search-button') || 
+            e.target.closest('.search-button') || 
+            e.target.matches('button[type="submit"]')) {
+          
+          const searchInput = document.querySelector('.search-input input') || 
+                              document.querySelector('input[type="search"]');
+          
+          if (searchInput && searchInput.value) {
+            e.preventDefault();
+            const searchTerm = searchInput.value.trim();
+            const searchUrl = `https://search.bilibili.com/all?keyword=${encodeURIComponent(searchTerm)}`;
+            
+            safeNavigate(searchUrl, false); // 使用传统导航方法
+          }
+        }
+      });
+
+      // 添加教育内容标记
+      this.addSearchPageStyles();
+      
+      // 优化搜索页面
+      this.optimizeSearchPage();
+      
+      // 设置搜索页面观察器
+      this.setupSearchObserver();
+    }
+    
+    /**
+     * 添加搜索页面优化样式
+     */
+    addSearchPageStyles() {
+      ensureStylesOnce('search-page-styles', `
+        /* 搜索页面优化样式 */
+        .search-container .suggest-wrap,
+        #server-search-app .suggest-wrap,
+        .search-page .suggest-wrap {
+          display: none !important;
+        }
+        
+        /* 隐藏右侧广告和推广内容 */
+        .search-container .right-container .ad-report,
+        #server-search-app .right-container .ad-report,
+        .search-page .right-container .ad-report,
+        [class*="ad-report"],
+        [class*="bili-advert"] {
+          display: none !important;
+        }
+        
+        /* 隐藏视频卡片上的多余信息 */
+        .search-container .bili-video-card .bili-video-card__info--bottom,
+        #server-search-app .bili-video-card .bili-video-card__info--bottom,
+        .video-list .video-item .info .upname,
+        [class*="video-list"] [class*="duration"] {
+          opacity: 0.6;
+        }
+        
+        /* 突出显示视频标题 */
+        .search-container .bili-video-card .bili-video-card__info--tit,
+        #server-search-app .bili-video-card .bili-video-card__info--tit,
+        .video-list .video-item .title,
+        [class*="video-title"],
+        a.title {
+          font-weight: bold;
+        }
+        
+        /* 专注模式下更清晰的布局 */
+        .search-container .search-page-wrapper,
+        #server-search-app .search-page-wrapper,
+        .search-page .search-result-container {
+          max-width: 1000px;
+          margin: 0 auto;
+        }
+        
+        /* 教育内容标记 */
+        .education-content-tag {
+          background-color: #00aeec;
+          color: #fff;
+          padding: 1px 5px;
+          border-radius: 4px;
+          font-size: 12px;
+          margin-left: 5px;
+          display: inline-block;
+        }
+      `);
+      
+      safeLog('搜索优化', '样式已添加');
+    }
+    
+    /**
+     * 设置搜索页面DOM观察器
+     */
+    setupSearchObserver() {
+      try {
+        // 查找搜索容器元素，限制观察范围
+        const searchContainer = document.querySelector(this.searchSelectors.searchContainer.join(','));
+        const resultList = document.querySelector(this.searchSelectors.resultList.join(','));
+        
+        // 如果找不到容器，则观察body，但限制变更类型
+        const target = resultList || searchContainer || document.body;
+        
+        // 使用DOMObserver类创建观察器
+        this.searchObserver = DOMObserver.observe(
+          target, 
+          () => this.optimizeSearchPage(),
+          null,
+          true // 使用节流
+        );
+        
+        safeLog('搜索优化', '观察器已设置');
+      } catch (err) {
+        safeLog('搜索优化', '设置观察器失败', 'error', err);
+      }
+    }
+    
+    /**
+     * 优化搜索页面
+     * - 隐藏干扰内容
+     * - 突出显示有用信息
+     */
+    optimizeSearchPage() {
+      try {
+        // 处理搜索页面广告
+        this.hideAds();
+        
+        // 优化搜索结果布局
+        this.optimizeSearchLayout();
+        
+        // 突出显示教育类内容
+        this.highlightEducationalContent();
+        
+        safeLog('搜索优化', '页面已优化');
+      } catch (err) {
+        safeLog('搜索优化', '优化页面失败', 'error', err);
+      }
+    }
+    
+    /**
+     * 隐藏广告和干扰内容
+     */
+    hideAds() {
+      // 广告选择器
+      const adSelectors = [
+        '.ad-report', 
+        '.bilibili-player-promote',
+        '.suggest-item[data-type="ad"]', 
+        '.video-list-item.special-card',
+        '[class*="ad-report"]',
+        '[class*="bili-advert"]',
+        '[data-loc-id*="ad"]'
+      ];
+      
+      // 使用健壮选择器查找广告元素
+      const ads = robustSelector(adSelectors);
+        
+      // 隐藏查找到的广告元素
+      if (ads && ads.length) {
+        ads.forEach(ad => {
+          if (ad && ad.style) {
+            ad.style.display = 'none';
+          }
+        });
+        safeLog('搜索优化', `隐藏了 ${ads.length} 个广告元素`);
+      }
+    }
+    
+    /**
+     * 优化搜索结果布局
+     */
+    optimizeSearchLayout() {
+      // 使用更健壮的选择器组合，适应B站新界面
+      const navSelectors = [
+        '.search-nav-wrap',
+        '.search-page__head',
+        '.search-navigator',
+        '.bili-header__channel'  // 添加新的导航栏选择器
+      ];
+      
+      // 使用robustSelector工具函数查找元素
+      const navElement = robustSelector(navSelectors);
+      
+      if (navElement) {
+        // 添加标识类名，便于后续处理
+        navElement.classList.add('focus-optimized-nav');
+        
+        // 简化导航栏，移除不必要元素
+        const nonEssentialSelectors = [
+          '.trending', '.live-tab', '.bangumi-tab',
+          '.pgc-tab', '.upuser-tab', '.article-tab'
+        ];
+        
+        nonEssentialSelectors.forEach(selector => {
+          const elements = navElement.querySelectorAll(selector);
+          elements.forEach(el => {
+            el.style.display = 'none';
+          });
+        });
+      }
+    }
+    
+    /**
+     * 突出显示教育类内容
+     */
+    highlightEducationalContent() {
+      // 查找包含"教育"、"学习"、"课程"等关键词的内容
+      const educationalKeywords = ['教育', '学习', '课程', '培训', '讲座', '教程', '知识'];
+      
+      // 获取所有视频卡片
+      const videoCards = robustSelector(this.searchSelectors.videoCards);
+      
+      if (!videoCards || !videoCards.length) {
+        safeLog('搜索优化', '未找到视频卡片元素');
+        return;
+      }
+      
+      videoCards.forEach(card => {
+        // 安全地检查元素
+        if (!card || !card.style) return;
+        
+        // 获取标题元素
+        const title = card.querySelector(this.searchSelectors.titleElement.join(','));
+        if (!title || !title.textContent) return;
+        
+        // 检查标题是否包含教育关键词
+        const isEducational = educationalKeywords.some(keyword => 
+          title.textContent.includes(keyword)
+        );
+        
+        if (isEducational) {
+          // 添加特殊样式突出显示
+          card.style.border = '2px solid #00aeec';
+          card.style.boxShadow = '0 0 8px rgba(0, 174, 236, 0.2)';
+          
+          // 如果卡片上已有"学习内容"标签，不重复添加
+          if (card.querySelector('.education-content-tag')) return;
+          
+          // 尝试找合适的容器添加标签
+          const tagContainer = card.querySelector('.bili-video-card__info--owner, .info, .upname') 
+                            || card.querySelector('.video-item .title')?.parentElement
+                            || title.parentElement;
+                            
+          if (tagContainer) {
+            const educationTag = document.createElement('span');
+            educationTag.className = 'education-content-tag';
+            educationTag.textContent = '学习内容';
+            tagContainer.appendChild(educationTag);
+          }
+        }
+      });
+    }
+    
+    
+    /**
+     * 处理全局设置 - 已重构为使用统一的GlobalSettingsManager
+     * @deprecated 使用 GlobalSettingsManager.handleGlobalSettings() 替代
+     */
+    async handleGlobalSettings() {
+      console.warn('[专注模式] handleGlobalSettings已废弃，请使用GlobalSettingsManager.handleGlobalSettings()');
+      return GlobalSettingsManager.handleGlobalSettings();
+    }
+    
+    /**
+     * @deprecated 这些方法已移至 GlobalSettingsManager，请使用统一的设置管理器
+     */
+    
+    // ✅ showPasswordDialog 已移至 GlobalSettingsManager (美化版本)
+    
+    // ✅ showRemindersDialog 已移至 GlobalSettingsManager (美化版本)
+    
+    // ✅ showConfirmDialog 已移至 GlobalSettingsManager (美化版本)
+    
+    // ✅ showMessage 已移至 GlobalSettingsManager (美化版本)
+    
+    
+    /**
+     * 重置搜索界面
+     * 清除搜索框，重新加载合集
+     */
+    async resetSearchInterface() {
+      try {
+        console.log('[专注模式] 正在重置搜索界面');
+        
+        // 直接调用统一的设置管理方法，避免代码重复
+        // 如果用户只想重置搜索界面，显示选项对话框
+        const confirmed = confirm('是否要打开设置菜单？\n确定 - 打开完整设置菜单\n取消 - 仅重置搜索界面');
+        if (confirmed) {
+          // 调用统一的设置管理方法
+          await GlobalSettingsManager.handleGlobalSettings();
+        } else {
+          // 直接重置搜索界面
+          this.clearSearchAndReloadCollections();
+        }
+      } catch (err) {
+        console.error('[专注模式] 重置搜索界面失败:', err);
+        // 出错时直接使用简单重置
+        this.clearSearchAndReloadCollections();
+      }
+    }
+    
+    /**
+     * 清空搜索框并重新加载合集
+     * 作为resetSearchInterface的辅助方法
+     */
+    clearSearchAndReloadCollections() {
+      // 查找搜索输入框
+      const searchInput = document.querySelector('.focused-search-input');
+      if (searchInput) {
+        searchInput.value = ''; // 清空搜索框
+      }
+    
+      // 重新加载合集数据
+      this.loadCollections().then(() => {
+        // 重新渲染合集
+        this.renderCollections();
+        
+        // 显示成功消息
+        const uiUtils = this.ensureUIUtils();
+        if (uiUtils) {
+          this.showMessage('搜索界面已重置', 'success', uiUtils);
+        } else {
+          // 如果无法获取UIUtils，使用简单提示
+          alert('搜索界面已重置');
+        }
+      });
+    }
+
   }
 
   // 创建类实例 - 只在静态初始化失败时使用此方法
@@ -2332,4 +3233,47 @@
 
   // 导出全局变量
   window.FocusedHomepage = FocusedHomepage;
+
+  console.log('[专注模式] focused-homepage.js 加载完成 - ' + new Date().toISOString());
+  console.log('[专注模式] FocusedHomepage类是否可用:', typeof FocusedHomepage === 'function');
+
+  // 新增: 强制渲染专注模式界面
+  function forceRenderFocusedInterface() {
+    // 如果FocusedHomepage类已加载，立即创建实例并初始化
+    if (typeof window.FocusedHomepage === 'function') {
+      if (!window.focusedHomepage) {
+        window.focusedHomepage = new window.FocusedHomepage();
+        console.log('[专注模式] 提前创建FocusedHomepage实例');
+      }
+      
+      // 强制初始化
+      if (window.focusedHomepage.init) {
+        window.focusedHomepage.init(true);
+        console.log('[专注模式] 提前强制初始化专注界面');
+      }
+    } else {
+      // 如果类未加载，设置一个定时器等待类加载
+      console.log('[专注模式] 等待FocusedHomepage类加载...');
+      let attempts = 0;
+      const maxAttempts = 10;
+      
+      const checkClass = () => {
+        attempts++;
+        if (typeof window.FocusedHomepage === 'function') {
+          if (!window.focusedHomepage) {
+            window.focusedHomepage = new window.FocusedHomepage();
+          }
+          
+          if (window.focusedHomepage.init) {
+            window.focusedHomepage.init(true);
+            console.log('[专注模式] 延迟初始化专注界面成功');
+          }
+        } else if (attempts < maxAttempts) {
+          setTimeout(checkClass, 100);
+        }
+      };
+      
+      checkClass();
+    }
+  }
 })(); 

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>B站学习统计</title>
-    <link rel="stylesheet" href="daily-stats.css">
+    <link rel="stylesheet" href="popup.css">
 </head>
 <body>
     <div class="container">
@@ -11,44 +11,193 @@
         <div class="stats-container">
             <div class="stat-card">
                 <div class="stat-value" id="total-time">0分钟</div>
-                <div class="stat-label">总学习时长</div>
+                <div class="stat-label">今日学习时长</div>
             </div>
             <div class="stat-card">
                 <div class="stat-value" id="video-count">0</div>
-                <div class="stat-label">学习视频数</div>
+                <div class="stat-label">今日视频数</div>
+            </div>
+            <div class="stat-card pomodoro-stat-card">
+                <div class="stat-value" id="pomodoro-count">0</div>
+                <div class="stat-label">今日完成番茄🍅</div>
             </div>
         </div>
+        
+        <!-- 新增：番茄钟详情面板 -->
+        <div class="pomodoro-details-container">
+            <button id="pomodoro-toggle-btn" class="pomodoro-toggle-btn">
+                📊 查看今日详情 <span class="toggle-icon">▼</span>
+            </button>
+            <div id="pomodoro-details" class="pomodoro-details" style="display: none;">
+                <div class="detail-section">
+                    <div class="detail-row">
+                        <span class="detail-label">🍅 番茄钟总数</span>
+                        <span class="detail-value" id="detail-total-pomodoro">0个</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">✅ 完成次数</span>
+                        <span class="detail-value" id="detail-completed">0次</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">⏱️ 工作时长</span>
+                        <span class="detail-value" id="detail-work-time">0分钟</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">☕ 休息时长</span>
+                        <span class="detail-value" id="detail-break-time">0分钟</span>
+                    </div>
+                </div>
+                
+                <div class="detail-section">
+                    <div class="section-title">📈 模式使用</div>
+                    <div class="mode-stats">
+                        <div class="mode-item">
+                            <span class="mode-label">⏳ 倒计时</span>
+                            <span class="mode-value" id="detail-countdown">0次</span>
+                        </div>
+                        <div class="mode-item">
+                            <span class="mode-label">⏰ 正计时</span>
+                            <span class="mode-value" id="detail-countup">0次</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="detail-section">
+                    <div class="section-title">⏰ 最近记录</div>
+                    <div id="recent-records" class="recent-records">
+                        <div class="no-data">暂无记录</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- 质量评分卡片 -->
+        <div class="quality-score-card" id="quality-score-card">
+            <button id="help-btn" class="help-btn help-btn-small" title="查看评分说明">
+               
+                <span class="help-text">说明</span>
+            </button>
+            
+            <div class="quality-header">
+                <h2>今日学习质量</h2>
+            </div>
+            
+            <div class="quality-score-display">
+                <div class="score-circle">
+                    <div class="score-value" id="quality-score">--</div>
+                    <div class="score-max">/100</div>
+                </div>
+                <div class="score-rating">
+                    <div class="rating-stars" id="rating-stars">📊</div>
+                    <div class="rating-level" id="rating-level">暂无数据</div>
+                    <div class="rating-message" id="rating-message">开始学习后即可查看</div>
+                </div>
+            </div>
+            
+            <!-- 四维度评分 -->
+            <div class="quality-dimensions">
+                <div class="dimension-item">
+                    <div class="dimension-name">时间有效率</div>
+                    <div class="dimension-bar">
+                        <div class="dimension-fill" id="dimension-time" style="width: 0%"></div>
+                    </div>
+                    <div class="dimension-value" id="dimension-time-value">--%</div>
+                </div>
+                <div class="dimension-item">
+                    <div class="dimension-name">专注稳定性</div>
+                    <div class="dimension-bar">
+                        <div class="dimension-fill" id="dimension-stability" style="width: 0%"></div>
+                    </div>
+                    <div class="dimension-value" id="dimension-stability-value">--%</div>
+                </div>
+                <div class="dimension-item">
+                    <div class="dimension-name">持续专注力</div>
+                    <div class="dimension-bar">
+                        <div class="dimension-fill" id="dimension-continuous" style="width: 0%"></div>
+                    </div>
+                    <div class="dimension-value" id="dimension-continuous-value">--%</div>
+                </div>
+                <div class="dimension-item">
+                    <div class="dimension-name">学习完成度</div>
+                    <div class="dimension-bar">
+                        <div class="dimension-fill" id="dimension-completion" style="width: 0%"></div>
+                    </div>
+                    <div class="dimension-value" id="dimension-completion-value">--%</div>
+                </div>
+            </div>
+            
+            <!-- 改进建议 -->
+            <div class="quality-suggestions" id="quality-suggestions" style="display: none;">
+                <h3>💡 改进建议</h3>
+                <div class="suggestions-list" id="suggestions-list"></div>
+            </div>
+        </div>
+        <!-- 月历视图 -->
+        <div class="calendar-container" id="calendar-container">
+            <div class="calendar-header">
+                <button id="calendar-prev-month" class="calendar-nav-btn">◀</button>
+                <h3 class="calendar-title" id="calendar-title">2025年10月</h3>
+                <button id="calendar-next-month" class="calendar-nav-btn">▶</button>
+            </div>
+            <div class="calendar-weekdays">
+                <div class="weekday"><div>日</div></div>
+                <div class="weekday"><div>一</div></div>
+                <div class="weekday"><div>二</div></div>
+                <div class="weekday"><div>三</div></div>
+                <div class="weekday"><div>四</div></div>
+                <div class="weekday"><div>五</div></div>
+                <div class="weekday"><div>六</div></div>
+            </div>
+            <div id="calendar-days" class="calendar-days"></div>
+        </div>
+        
+        <!-- 年度热力图 -->
+        <div class="heatmap-container" id="heatmap-container">
+            <h3 class="heatmap-title">📅 年度学习热力图</h3>
+            <div class="heatmap-legend">
+                <span class="legend-label">少</span>
+                <div class="legend-colors">
+                    <div class="legend-item level-0"></div>
+                    <div class="legend-item level-1"></div>
+                    <div class="legend-item level-2"></div>
+                    <div class="legend-item level-3"></div>
+                    <div class="legend-item level-4"></div>
+                </div>
+                <span class="legend-label">多</span>
+            </div>
+            <div class="heatmap-wrapper">
+                <div class="heatmap-scroll">
+                    <div id="heatmap-grid"></div>
+                </div>
+            </div>
+            <div class="heatmap-stats">
+                <span id="heatmap-total-days">0天</span> 的学习记录
+            </div>
+        </div>
+        
         <div class="chart-container">
             <div id="study-chart"></div>
         </div>
         <div class="controls">
-            <select id="period-selector">
-                <option value="week">最近7天</option>
-                <option value="month">最近30天</option>
-                <option value="year">最近一年</option>
-                <option value="all">全部时间</option>
+            <select id="chart-view-selector">
+                <option value="week-daily" selected>最近7天（按日）</option>
+                <option value="month-weekly">最近4周（按周）</option>
+                <option value="year-monthly">最近12个月（按月）</option>
             </select>
             <button id="export-btn">导出数据</button>
         </div>
         <div id="loading-indicator" style="display: none;">加载中...</div>
-        <!-- Electron配对区域 -->
-        <div class="section">
-            <h3>桌面应用同步</h3>
-            <div id="electron-pairing-status">
-                <p id="pairing-status-text">未连接到桌面应用</p>
-            </div>
-            <div id="electron-pairing-controls">
-                <input type="text" id="electron-server-url" placeholder="WebSocket服务器地址" value="ws://localhost:8765">
-                <button id="connect-electron-btn">连接</button>
-            </div>
-            <div id="electron-pairing-code" style="display:none;">
-                <p>配对码: <span id="pairing-code"></span></p>
-                <p>请在桌面应用中输入此配对码</p>
-            </div>
-        </div>
     </div>
-    <script src="../node_modules/chart.js/dist/chart.umd.js"></script>
-    <script src="daily-stats.js"></script>
+    <script src="../lib/chart.js/dist/chart.min.js"></script>
+    <script src="../lib/html2canvas/html2canvas.min.js"></script>
+    <script src="quality-analyzer.js"></script>
+    <!-- 导出系统模块 -->
+    <script src="export/export-utils.js"></script>
+    <script src="export/export-timeline.js"></script>
+    <script src="export/export-reflection.js"></script>
+    <script src="export/export-dialog.js"></script>
+    <script src="export/export-core.js"></script>
+    <script src="export/export-image.js"></script>
+    <script src="export/export-system.js"></script>
     <script src="popup.js"></script>
 </body>
 </html>

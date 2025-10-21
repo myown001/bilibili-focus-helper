@@ -1,2 +1,27 @@
-ongzhitaide
-node_modules
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# 编辑器
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 临时文件
+*.log
+*.tmp
+.cache/
+
+# Node modules (如果有)
+node_modules/
+
+# 备份文件
+*.bak
+*.backup
+
+# 测试文件
+test/
+*.test.js

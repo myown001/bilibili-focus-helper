@@ -1,0 +1,511 @@
+/**
+ * 专注模式统一弹窗样式系统 - 重构版
+ * 
+ * 重构原则：
+ * 1. 保留对抗B站样式的 !important（position, z-index, display等）
+ * 2. 移除内部样式冲突的 !important（padding, font-size等）
+ * 3. 使用更具体的选择器提高优先级
+ * 
+ * 层级管理：
+ * - 基础内容：         z-index: 1-1000
+ * - 页面UI增强：       z-index: 1000-9999  
+ * - 视频控制栏：       z-index: 10000-99999
+ * - 普通弹窗：         z-index: 100000-999999
+ * - 重要弹窗：         z-index: 1000000-9999999
+ * - 紧急弹窗（设置等）：z-index: 10000000+
+ */
+
+:root {
+  /* Z-Index 层级定义 */
+  --focus-z-normal-dialog: 1000000;
+  --focus-z-important-dialog: 5000000;  
+  --focus-z-critical-dialog: 10000000;
+  --focus-z-emergency-dialog: 50000000;
+  
+  /* 弹窗尺寸 - 优化后的尺寸设置 */
+  --focus-dialog-width: 560px;
+  --focus-dialog-max-width: 90vw;
+  --focus-dialog-min-width: 400px;
+  --focus-dialog-padding: 28px;
+  
+  /* 弹窗颜色 */
+  --focus-dialog-bg: #ffffff;
+  --focus-dialog-overlay-bg: rgba(0, 0, 0, 0.7);
+  --focus-dialog-border-radius: 16px;
+  --focus-dialog-shadow: 0 12px 48px rgba(0, 0, 0, 0.18), 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+/* ========== 基础弹窗背景遮罩 ========== */
+/* 
+ * 🔒 保留 !important 原因：
+ * - position, display, z-index: 对抗B站样式，确保弹窗正确显示
+ * - top, left, right, bottom, width, height: 确保全屏覆盖
+ */
+.focus-dialog-overlay {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  display: flex !important;
+  z-index: var(--focus-z-normal-dialog) !important;
+  
+  /* ✅ 移除 !important：内部样式，使用选择器权重 */
+  justify-content: center;
+  align-items: center;
+  background-color: var(--focus-dialog-overlay-bg);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+/* ========== 弹窗可见状态 ========== */
+/* 🔒 保留 !important：确保显示状态不被覆盖 */
+.focus-dialog-overlay.focus-dialog-visible {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.focus-dialog-overlay.focus-dialog-fade-out {
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
+/* ========== 弹窗优先级变体 ========== */
+/* 🔒 保留 !important：z-index 必须确保优先级 */
+.focus-dialog-overlay.focus-dialog-important {
+  z-index: var(--focus-z-important-dialog) !important;
+}
+
+.focus-dialog-overlay.focus-dialog-critical {
+  z-index: var(--focus-z-critical-dialog) !important;
+}
+
+.focus-dialog-overlay.focus-dialog-emergency {
+  z-index: var(--focus-z-emergency-dialog) !important;
+}
+
+/* ========== 弹窗主体 ========== */
+/*
+ * ✅ 优化策略：使用父选择器增加权重
+ * .focus-dialog-overlay .focus-dialog 权重更高
+ * 使用flexbox居中，不使用绝对定位
+ */
+.focus-dialog-overlay .focus-dialog {
+  position: relative;
+  background: var(--focus-dialog-bg);
+  border-radius: var(--focus-dialog-border-radius);
+  box-shadow: var(--focus-dialog-shadow);
+  padding: var(--focus-dialog-padding);
+  width: var(--focus-dialog-width);
+  max-width: var(--focus-dialog-max-width);
+  min-width: var(--focus-dialog-min-width);
+  max-height: 85vh;
+  overflow-y: auto;
+  margin: 0;
+  z-index: 1; /* 相对于父overlay */
+}
+
+/* ========== 弹窗标题 ========== */
+.focus-dialog-overlay .focus-dialog h3,
+.focus-dialog-overlay .focus-dialog .focus-dialog-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: #18191c;
+  margin: 0 0 24px 0;
+  text-align: center;
+  letter-spacing: 0.3px;
+}
+
+/* ========== 弹窗内容 ========== */
+.focus-dialog-overlay .focus-dialog .focus-dialog-content,
+.focus-dialog-overlay .focus-dialog .dialog-content {
+  margin-bottom: 20px;
+  line-height: 1.5;
+  color: #18191c;
+}
+
+/* ========== 表单元素 ========== */
+.focus-dialog-overlay .focus-dialog .focus-dialog-form-group,
+.focus-dialog-overlay .focus-dialog .dialog-form-group {
+  margin-bottom: 15px;
+}
+
+.focus-dialog-overlay .focus-dialog .focus-dialog-form-group label,
+.focus-dialog-overlay .focus-dialog .dialog-form-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: #18191c;
+  font-size: 14px;
+}
+
+.focus-dialog-overlay .focus-dialog .focus-dialog-form-group input,
+.focus-dialog-overlay .focus-dialog .dialog-form-group input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #e3e5e7;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: border-color 0.3s;
+  box-sizing: border-box;
+}
+
+.focus-dialog-overlay .focus-dialog .focus-dialog-form-group input:focus,
+.focus-dialog-overlay .focus-dialog .dialog-form-group input:focus {
+  border-color: #00a1d6;
+  outline: none;
+}
+
+/* ========== 按钮组 ========== */
+.focus-dialog-overlay .focus-dialog .focus-dialog-buttons,
+.focus-dialog-overlay .focus-dialog .dialog-buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 28px;
+}
+
+.focus-dialog-overlay .focus-dialog .focus-dialog-button,
+.focus-dialog-overlay .focus-dialog .dialog-button {
+  flex: 1;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  border: none;
+  font-family: inherit;
+  position: relative;
+  overflow: hidden;
+  user-select: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* 按钮禁用状态 */
+.focus-dialog-overlay .focus-dialog .focus-dialog-button:disabled,
+.focus-dialog-overlay .focus-dialog .dialog-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  pointer-events: auto; /* 保持可点击以显示提示 */
+}
+
+/* 主按钮样式 */
+.focus-dialog-overlay .focus-dialog .focus-dialog-button.primary,
+.focus-dialog-overlay .focus-dialog .dialog-button.primary {
+  background: linear-gradient(135deg, #00a1d6 0%, #0091c2 100%);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(0, 161, 214, 0.3);
+}
+
+.focus-dialog-overlay .focus-dialog .focus-dialog-button.primary:hover:not(:disabled),
+.focus-dialog-overlay .focus-dialog .dialog-button.primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #0091c2 0%, #007fa8 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 161, 214, 0.4);
+}
+
+.focus-dialog-overlay .focus-dialog .focus-dialog-button.primary:active:not(:disabled),
+.focus-dialog-overlay .focus-dialog .dialog-button.primary:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(0, 161, 214, 0.3);
+}
+
+.focus-dialog-overlay .focus-dialog .focus-dialog-button.primary:disabled,
+.focus-dialog-overlay .focus-dialog .dialog-button.primary:disabled {
+  background: #a0a0a0;
+  color: #f0f0f0;
+}
+
+/* 次要按钮样式 */
+.focus-dialog-overlay .focus-dialog .focus-dialog-button.secondary,
+.focus-dialog-overlay .focus-dialog .dialog-button.secondary {
+  background: #f5f5f5;
+  color: #666;
+  border: 1px solid #e0e0e0;
+}
+
+.focus-dialog-overlay .focus-dialog .focus-dialog-button.secondary:hover:not(:disabled),
+.focus-dialog-overlay .focus-dialog .dialog-button.secondary:hover:not(:disabled) {
+  background: #e8e8e8;
+  border-color: #d0d0d0;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.focus-dialog-overlay .focus-dialog .focus-dialog-button.secondary:active:not(:disabled),
+.focus-dialog-overlay .focus-dialog .dialog-button.secondary:active:not(:disabled) {
+  transform: translateY(0);
+  background: #e0e0e0;
+}
+
+.focus-dialog-overlay .focus-dialog .focus-dialog-button.secondary:disabled,
+.focus-dialog-overlay .focus-dialog .dialog-button.secondary:disabled {
+  background: #f8f9fa;
+  color: #a0a0a0;
+  border-color: #e9ecef;
+}
+
+/* 按钮loading状态 */
+.focus-dialog-overlay .focus-dialog .focus-dialog-button.loading,
+.focus-dialog-overlay .focus-dialog .dialog-button.loading {
+  position: relative;
+}
+
+.focus-dialog-overlay .focus-dialog .focus-dialog-button.loading::after,
+.focus-dialog-overlay .focus-dialog .dialog-button.loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 12px;
+  height: 12px;
+  margin: -6px 0 0 -6px;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: button-spin 1s linear infinite;
+}
+
+@keyframes button-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* 确认按钮特殊样式 */
+.confirm-btn, 
+.focus-dialog-overlay .confirm-btn,
+.exit-transition-overlay .confirm-btn {
+  background: #00a1d6;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.confirm-btn:hover:not(:disabled),
+.focus-dialog-overlay .confirm-btn:hover:not(:disabled),
+.exit-transition-overlay .confirm-btn:hover:not(:disabled) {
+  background: #0091c2;
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: 0 4px 12px rgba(0, 161, 214, 0.3);
+}
+
+.confirm-btn:active:not(:disabled),
+.focus-dialog-overlay .confirm-btn:active:not(:disabled),
+.exit-transition-overlay .confirm-btn:active:not(:disabled) {
+  transform: translateY(0) scale(1);
+  box-shadow: 0 2px 6px rgba(0, 161, 214, 0.3);
+}
+
+.confirm-btn:disabled,
+.focus-dialog-overlay .confirm-btn:disabled,
+.exit-transition-overlay .confirm-btn:disabled {
+  background: #a0a0a0;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* ========== 消息样式 ========== */
+.focus-dialog-overlay .focus-dialog .focus-dialog-message,
+.focus-dialog-overlay .focus-dialog .dialog-message {
+  font-size: 14px;
+  color: #18191c;
+  line-height: 1.5;
+  text-align: center;
+  margin: 10px 0;
+}
+
+.focus-dialog-overlay .focus-dialog .focus-dialog-message.error,
+.focus-dialog-overlay .focus-dialog .dialog-message.error {
+  color: #f25d8e;
+}
+
+.focus-dialog-overlay .focus-dialog .focus-dialog-message.success,
+.focus-dialog-overlay .focus-dialog .dialog-message.success {
+  color: #00a1d6;
+}
+
+.focus-dialog-overlay .focus-dialog .focus-dialog-message.warning,
+.focus-dialog-overlay .focus-dialog .dialog-message.warning {
+  color: #ff8800;
+}
+
+/* ========== 特殊弹窗类型样式 ========== */
+/* 🔒 保留 !important：z-index 必须确保优先级 */
+
+/* 首次设置弹窗 */
+.focus-dialog-overlay.focus-first-time-dialog {
+  z-index: var(--focus-z-emergency-dialog) !important;
+}
+
+/* 退出确认弹窗 */
+.focus-dialog-overlay.focus-exit-dialog {
+  z-index: var(--focus-z-critical-dialog) !important;
+}
+
+/* 全局设置弹窗 */
+.focus-dialog-overlay.focus-global-settings-dialog {
+  z-index: var(--focus-z-important-dialog) !important;
+}
+
+/* ========== 响应式调整 ========== */
+/* 平板设备 */
+@media screen and (max-width: 768px) {
+  :root {
+    --focus-dialog-width: 95vw;
+    --focus-dialog-padding: 20px;
+  }
+  
+  .focus-dialog-overlay .focus-dialog {
+    max-width: 95vw;
+    min-width: 320px;
+  }
+  
+  .focus-dialog-overlay .focus-dialog h3,
+  .focus-dialog-overlay .focus-dialog .focus-dialog-title {
+    font-size: 20px;
+    margin-bottom: 20px;
+  }
+}
+
+/* 手机设备 */
+@media screen and (max-width: 480px) {
+  :root {
+    --focus-dialog-width: 98vw;
+    --focus-dialog-padding: 16px;
+  }
+  
+  .focus-dialog-overlay .focus-dialog {
+    max-width: 98vw;
+    min-width: 280px;
+    padding: 16px;
+  }
+  
+  .focus-dialog-overlay .focus-dialog h3,
+  .focus-dialog-overlay .focus-dialog .focus-dialog-title {
+    font-size: 18px;
+    margin-bottom: 16px;
+  }
+  
+  .focus-dialog-overlay .focus-dialog .focus-dialog-button,
+  .focus-dialog-overlay .focus-dialog .dialog-button {
+    padding: 10px 16px;
+    font-size: 14px;
+    min-width: 80px;
+  }
+  
+  .focus-dialog-overlay .focus-dialog .focus-dialog-buttons,
+  .focus-dialog-overlay .focus-dialog .dialog-buttons {
+    gap: 12px;
+    margin-top: 20px;
+  }
+}
+
+/* ========== 兼容性：向后兼容旧样式 ========== */
+/* 
+ * 🔒 保留 !important 原因：
+ * 这部分是为了兼容可能存在的旧代码，必须保持高优先级
+ * 确保在任何情况下弹窗都能正确显示
+ */
+.dialog-overlay,
+body .dialog-overlay,
+html .dialog-overlay {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  display: flex !important;
+  z-index: var(--focus-z-emergency-dialog) !important;
+  
+  /* ✅ 移除内部样式的 !important */
+  justify-content: center;
+  align-items: center;
+  background-color: var(--focus-dialog-overlay-bg);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  transform: none;
+  clip: none;
+  overflow: visible;
+}
+
+/* 🔒 保留 !important：确保显示状态 */
+.dialog-overlay.visible,
+body .dialog-overlay.visible,
+html .dialog-overlay.visible,
+.dialog-overlay.focus-dialog-visible,
+body .dialog-overlay.focus-dialog-visible,
+html .dialog-overlay.focus-dialog-visible {
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: flex !important;
+}
+
+.dialog-overlay.fade-out,
+.dialog-overlay.focus-dialog-fade-out {
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
+/* 确保对话框内容居中且可见 - 使用flexbox居中 */
+body .dialog-overlay .dialog,
+body .dialog-overlay .focus-dialog {
+  position: relative;
+  background: var(--focus-dialog-bg);
+  border-radius: var(--focus-dialog-border-radius);
+  box-shadow: var(--focus-dialog-shadow);
+  padding: var(--focus-dialog-padding);
+  width: var(--focus-dialog-width);
+  max-width: var(--focus-dialog-max-width);
+  min-width: var(--focus-dialog-min-width);
+  max-height: 85vh;
+  overflow-y: auto;
+  margin: 0;
+  z-index: 1;
+  
+  /* 🔒 保留 !important：确保显示 */
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: block !important;
+  transform: none !important;
+}
+
+/* ========== 防冲突：确保弹窗不被页面样式覆盖 ========== */
+body .focus-dialog-overlay,
+html .focus-dialog-overlay {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  line-height: normal;
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+/* 🔒 保留 !important：防止被首页专注模式隐藏 */
+body > .focus-dialog-overlay,
+body > .dialog-overlay {
+  display: flex !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+body.fullscreen-mode .focus-dialog-overlay,
+body.fullscreen-mode .dialog-overlay {
+  display: flex !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+

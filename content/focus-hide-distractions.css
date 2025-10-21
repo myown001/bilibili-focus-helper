@@ -1,0 +1,228 @@
+/* ========================================
+ * 专注模式 - 干扰项遮盖系统
+ * 原则：精确类名选择器，避免属性选择器误伤
+ * ======================================== */
+
+/* ========== 1. 导航栏优化：只保留首页按钮 ========== */
+
+/* 隐藏导航栏右侧所有内容（搜索、上传、消息、大会员等） */
+.bili-header__bar .right-entry,
+.bili-header__bar .right-entry-item,
+.bili-header .right-entry,
+.international-header .right-entry,
+.bili-header-m .right-entry,
+.header-right-entry,
+.nav-search-box,
+.bili-header__channel .right-entry {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+/* 隐藏左侧导航的非首页项（番剧、直播、游戏中心等） */
+.bili-header__bar .left-entry li:not(:first-child),
+.bili-header .left-entry li:not(:first-child),
+.left-entry li:not(:first-child),
+.header-left-entry li:not(:first-child) {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+/* 隐藏顶部其他导航相关元素 */
+.header-channel,
+.bili-header__channel,
+.channel-link,
+.channel-entry,
+.tab-bar,
+.bili-mini-header,
+.header-tabs,
+.nav-tabs {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+/* 🆕 隐藏首页按钮悬浮时的下拉菜单（频道分类菜单） */
+.v-popover-content,
+.v-popover-wrap .v-popover-content,
+.left-entry .v-popover-content,
+.bili-header__channel-panel,
+.channel-panel,
+.header-channel-panel,
+.nav-popover,
+.header-channel-menu,
+.channel-menu {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* 确保首页按钮可见可点击 */
+.bili-header__bar .left-entry li:first-child,
+.bili-header .left-entry li:first-child,
+.left-entry li:first-child,
+.header-left-entry li:first-child,
+a[href="/"],
+a[href="https://www.bilibili.com/"],
+a[href="https://www.bilibili.com"],
+a[title*="首页"],
+a[title*="Home"],
+.home-link,
+.navbar-home-link {
+  display: inline-block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+/* 确保首页按钮的父容器可见 */
+.bili-header__bar .left-entry,
+.bili-header .left-entry,
+.left-entry,
+.header-left-entry {
+  display: flex !important;
+  visibility: visible !important;
+}
+
+/* ========== 2. 搜索框热榜遮盖 ========== */
+/* 只使用精确类名，不使用属性选择器 */
+.search-panel .trending,
+.bili-header .trending,
+.search-panel .hotlist,
+.search-panel .history,
+.search-panel .suggest-wrap,
+.search-suggest-wrap,
+.suggest-wrap,
+.bilibili-search-suggest,
+.trending-list,
+.hotlist,
+#nav-searchform .suggest-wrap,
+#nav_searchform .suggest-wrap,
+.bili-search-suggestions,
+.search-suggestions,
+.search-container .suggest-wrap,
+#server-search-app .suggest-wrap,
+.search-trending-hotlist,
+.trending-item,
+.trending-section {
+  display: none !important;
+  visibility: hidden !important;
+  max-height: 0 !important;
+  overflow: hidden !important;
+}
+
+/* ========== 3. 广告遮盖（精确类名，避免误伤） ========== */
+/* ⚠️ 重要：只使用精确的类名，不使用 [class*="ad-"] 等属性选择器 */
+.slide-ad,
+.ad-report,
+.ad-floor-exp,
+.adblock-tips,
+.bili-advert,
+.banner-ad,
+.feed-ad,
+.ad-banner,
+.advertisement,
+.ad-card,
+.ad-floor,
+.video-ad,
+.popup-ad,
+.float-ad,
+.pgc-ad,
+.inline-ad {
+  display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  width: 0 !important;
+  overflow: hidden !important;
+}
+
+/* 通过data属性精确匹配B站标记的广告 */
+[data-ad-type],
+[data-loc-id*="ad_floor"] {
+  display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  overflow: hidden !important;
+}
+
+/* ========== 4. 直播推荐遮盖（精确类名） ========== */
+.live-room-recommend,
+.live-recommend-card,
+.bili-live-card,
+.live-tab,
+.live-entry,
+.bili-header__channel .live-entry {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+/* 通过href精确匹配直播链接 */
+.nav-item[href*="/live"],
+a[href*="live.bilibili.com"] {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+/* 通过data属性精确匹配直播内容 */
+[data-type="live"] {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+/* ========== 5. 右侧推荐和相关视频遮盖 ========== */
+/* 仅在视频页面应用，不影响搜索页 */
+.video-page .right-container .recommend-list,
+.video-page .right-container .recommend-container,
+.video-page .recommend-container .rec-list,
+.video-page .recommend-list-v1,
+.video-page .recommend-video,
+.video-page .slide-carousel,
+.video-page .related-recommend-card,
+.video-page .recommend-video-card,
+.video-page .video-page-card-small,
+.bpx-player-ending-related,
+.bilibili-player-video-recommend-container,
+.bilibili-player-video-recommend {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+/* ========== 6. 搜索页面特殊处理 ========== */
+/* ⚠️ 重要：在搜索页只隐藏明确的广告元素，不使用属性选择器 */
+.search-page .ad-report,
+.search-page .slide-ad,
+.search-page .live-tab,
+.search-page .bangumi-tab {
+  display: none !important;
+}
+
+/* 搜索页面通过data属性精确匹配广告 */
+.search-page [data-ad-type] {
+  display: none !important;
+}
+
+/* ========== 7. 评论区保护 ========== */
+/* 确保评论区始终可见可交互 */
+.comment-container,
+#comment,
+.reply-list,
+.reply-box,
+.comment-m,
+.bpx-player-commenting-area,
+#comment-module,
+.common-comment-wrapper,
+.comment-header,
+.comment-send {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+/* ========== 8. 全屏模式优化 ========== */
+/* 全屏时完全隐藏导航栏（包括首页按钮） */
+body.fullscreen-mode .bili-header,
+body.fullscreen-mode .bili-header__bar,
+body.fullscreen-mode .international-header {
+  display: none !important;
+  visibility: hidden !important;
+}

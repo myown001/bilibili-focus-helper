@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学习质量评分体系说明</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.8;
+            color: #333;
+            background: linear-gradient(135deg, #7E0C6E 0%, #5a084d 100%);
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 50px;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h1 {
+            font-size: 36px;
+            color: #7E0C6E;
+            margin-bottom: 30px;
+            text-align: center;
+            border-bottom: 3px solid #7E0C6E;
+            padding-bottom: 20px;
+        }
+
+        h2 {
+            font-size: 28px;
+            color: #5a084d;
+            margin: 40px 0 20px;
+            padding-left: 15px;
+            border-left: 5px solid #5a084d;
+        }
+
+        h3 {
+            font-size: 22px;
+            color: #555;
+            margin: 30px 0 15px;
+        }
+
+        h4 {
+            font-size: 18px;
+            color: #666;
+            margin: 20px 0 10px;
+        }
+
+        p {
+            margin: 15px 0;
+            font-size: 16px;
+        }
+
+        .intro {
+            font-size: 18px;
+            text-align: center;
+            color: #666;
+            margin: 20px 0 40px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        th {
+            background: linear-gradient(135deg, #7E0C6E 0%, #5a084d 100%);
+            color: white;
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .code-block {
+            background: #f5f5f5;
+            border-left: 4px solid #7E0C6E;
+            padding: 15px 20px;
+            margin: 15px 0;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+        }
+
+        .good {
+            color: #27ae60;
+            font-weight: 600;
+        }
+
+        .bad {
+            color: #e74c3c;
+            font-weight: 600;
+        }
+
+        ul, ol {
+            margin: 15px 0 15px 30px;
+        }
+
+        li {
+            margin: 10px 0;
+        }
+
+        .tip-box {
+            background: #e8f5e9;
+            border-left: 4px solid #27ae60;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+
+        .warning-box {
+            background: #fff3e0;
+            border-left: 4px solid #ff9800;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+
+        .case-study {
+            background: #f3e5f5;
+            border-radius: 8px;
+            padding: 25px;
+            margin: 20px 0;
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+            margin: 20px 0;
+        }
+
+        .timeline-item {
+            margin: 15px 0;
+            padding-left: 20px;
+            border-left: 2px solid #7E0C6E;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            padding-top: 30px;
+            border-top: 2px solid #e0e0e0;
+            color: #999;
+        }
+
+        code {
+            background: #f5f5f5;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            color: #e74c3c;
+        }
+
+        .highlight {
+            background: linear-gradient(135deg, rgba(126, 12, 110, 0.1) 0%, rgba(90, 8, 77, 0.1) 100%);
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 B站专注学习助手 - 学习质量评分体系说明</h1>
+        
+        <div class="intro">
+            <p><strong>学习质量评分是一个 0-100 分的综合指标，帮助你了解自己的学习专注程度。</strong></p>
+            <p>就像健身APP追踪你的运动质量一样，这个评分追踪你的学习质量。</p>
+        </div>
+
+        <h2>⭐ 评分等级</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>分数</th>
+                    <th>评级</th>
+                    <th>说明</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>90-100分</td>
+                    <td>⭐⭐⭐⭐⭐ 卓越</td>
+                    <td>专注力极佳，学习效率非常高</td>
+                </tr>
+                <tr>
+                    <td>80-89分</td>
+                    <td>⭐⭐⭐⭐ 优秀</td>
+                    <td>学习状态很好，保持下去</td>
+                </tr>
+                <tr>
+                    <td>70-79分</td>
+                    <td>⭐⭐⭐ 良好</td>
+                    <td>表现不错，还有提升空间</td>
+                </tr>
+                <tr>
+                    <td>60-69分</td>
+                    <td>⭐⭐ 及格</td>
+                    <td>基本达标，建议改进专注度</td>
+                </tr>
+                <tr>
+                    <td>50-59分</td>
+                    <td>⭐ 一般</td>
+                    <td>专注度不足，需要加强</td>
+                </tr>
+                <tr>
+                    <td>&lt;50分</td>
+                    <td>⚠️ 需改进</td>
+                    <td>学习效率较低，建议调整方法</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>🧮 评分是怎么计算的？</h2>
+        <p>你的总分由 <span class="highlight">4个维度</span> 综合计算：</p>
+
+        <h3>1️⃣ 时间有效率（35%权重）⭐ 最重要</h3>
+        <p><strong>看什么：</strong>有效学习时间占总时长的比例</p>
+        
+        <div class="code-block"><span class="good">✅ 好情况：</span>
+学习60分钟，视频播放55分钟
+有效率 = 55/60 = 92% → 得分很高
+
+<span class="bad">❌ 差情况：</span>
+学习60分钟，视频播放25分钟（中途暂停太多）
+有效率 = 25/60 = 42% → 得分很低</div>
+
+        <div class="tip-box">
+            <strong>💡 提升方法：</strong>
+            <ul>
+                <li>减少暂停时间</li>
+                <li>提前准备好笔记本和笔</li>
+                <li>问题课后查，不要边学边查</li>
+            </ul>
+        </div>
+
+        <h3>2️⃣ 专注稳定性（30%权重）</h3>
+        <p><strong>看什么：</strong>暂停次数、退出全屏次数、切换标签次数</p>
+        
+        <div class="code-block"><span class="good">✅ 好情况：</span>
+60分钟学习，只暂停2次，没切换标签
+干扰少 → 得分很高
+
+<span class="bad">❌ 差情况：</span>
+60分钟学习，暂停15次，切换标签30次
+频繁干扰 → 得分很低</div>
+
+        <div class="tip-box">
+            <strong>💡 提升方法：</strong>
+            <ul>
+                <li>关闭无关标签页</li>
+                <li>手机静音或飞行模式</li>
+                <li>使用全屏模式，减少干扰</li>
+                <li>提前上厕所、接水</li>
+            </ul>
+        </div>
+
+        <h3>3️⃣ 持续专注力（25%权重）</h3>
+        <p><strong>看什么：</strong>最长连续学习时间</p>
+        
+        <div class="code-block"><span class="good">✅ 好情况：</span>
+60分钟学习，最长连续35分钟不中断
+持续力强 → 得分很高
+
+<span class="bad">❌ 差情况：</span>
+60分钟学习，最长连续只有8分钟
+经常被打断 → 得分很低</div>
+
+        <div class="tip-box">
+            <strong>💡 提升方法：</strong>
+            <ul>
+                <li>使用<strong>番茄钟</strong>（按 <code>Ctrl+Shift+T</code>）</li>
+                <li>设定目标：先专注25分钟</li>
+                <li>把想做的事情记下来，学完再做</li>
+            </ul>
+        </div>
+
+        <h3>4️⃣ 学习完成度（10%权重）</h3>
+        <p><strong>看什么：</strong>学习时长是否充足</p>
+        
+        <div class="code-block"><span class="good">✅ 60分钟以上 → 100分
+✅ 45分钟以上 → 90分
+✅ 30分钟以上 → 75分</span>
+⚠️ 15分钟以上 → 60分
+<span class="bad">❌ 不到15分钟 → 40分</span></div>
+
+        <h2>💡 如何提高评分？</h2>
+
+        <h3>🎯 从70分提升到80分+（优秀）</h3>
+        <p><strong>重点改进：减少干扰</strong></p>
+        <ol>
+            <li><strong>关闭干扰源</strong>
+                <ul>
+                    <li>微信、QQ、邮件通知全关闭</li>
+                    <li>无关网页和软件全关闭</li>
+                    <li>手机放远处或静音</li>
+                </ul>
+            </li>
+            <li><strong>使用番茄钟工作法</strong>
+                <ul>
+                    <li>按 <code>Ctrl+Shift+T</code> 启动番茄钟</li>
+                    <li>设定25分钟专注时间</li>
+                    <li>时间到了休息5分钟</li>
+                </ul>
+            </li>
+            <li><strong>全屏学习</strong>
+                <ul>
+                    <li>进入全屏模式（按F11或视频全屏按钮）</li>
+                    <li>沉浸式学习，减少其他窗口干扰</li>
+                </ul>
+            </li>
+        </ol>
+
+        <h3>🎯 从80分提升到90分+（卓越）</h3>
+        <p><strong>重点改进：提升连续专注时长</strong></p>
+        <ol>
+            <li><strong>延长单次学习时间</strong> - 目标：单次连续30分钟以上</li>
+            <li><strong>优化学习环境</strong> - 桌面整洁、光线适中、温度舒适</li>
+            <li><strong>建立学习仪式感</strong> - 固定时间、固定位置、开始前深呼吸</li>
+        </ol>
+
+        <h2>📱 实际案例</h2>
+
+        <div class="case-study">
+            <h3>案例1：小明的进步</h3>
+            
+            <div class="timeline">
+                <div class="timeline-item">
+                    <h4>第1周：62分（及格）</h4>
+                    <p><strong>问题：</strong></p>
+                    <ul>
+                        <li>频繁切换标签（查手机、看微信）</li>
+                        <li>暂停15次</li>
+                        <li>最长连续只有12分钟</li>
+                    </ul>
+                    <p><strong class="good">改进措施：</strong></p>
+                    <ul>
+                        <li>手机放书包</li>
+                        <li>关闭微信</li>
+                        <li>使用番茄钟</li>
+                    </ul>
+                </div>
+
+                <div class="timeline-item">
+                    <h4>第2周：78分（良好）</h4>
+                    <p><strong class="good">效果：</strong></p>
+                    <ul>
+                        <li>切换标签减少到5次</li>
+                        <li>暂停减少到6次</li>
+                        <li>最长连续提升到22分钟</li>
+                    </ul>
+                </div>
+
+                <div class="timeline-item">
+                    <h4>第3周：89分（优秀）</h4>
+                    <p><strong class="good">效果：</strong></p>
+                    <ul>
+                        <li>几乎不切换标签</li>
+                        <li>暂停只有2次</li>
+                        <li>最长连续35分钟</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="case-study">
+            <h3>案例2：小红的困境</h3>
+            
+            <p><strong>问题：</strong>评分一直在50-60分徘徊</p>
+            
+            <div class="warning-box">
+                <strong>❌ 原因分析：</strong>
+                <ul>
+                    <li>边学边刷手机</li>
+                    <li>遇到不懂的马上百度</li>
+                    <li>频繁暂停记笔记</li>
+                </ul>
+            </div>
+
+            <div class="tip-box">
+                <strong>✅ 解决方案：</strong>
+                <ul>
+                    <li>手机放客厅</li>
+                    <li>问题先记下来，课后统一查</li>
+                    <li>使用0.75x慢速播放，减少暂停</li>
+                    <li>笔记课后整理</li>
+                </ul>
+            </div>
+
+            <p><strong class="good">结果：</strong></p>
+            <ul>
+                <li>3天后提升到72分（良好）</li>
+                <li>1周后稳定在80分（优秀）</li>
+            </ul>
+        </div>
+
+        <h2>❓ 常见问题</h2>
+
+        <h4>Q1：评分低于60分怎么办？</h4>
+        <p><strong>别担心，这很正常！</strong></p>
+        <ol>
+            <li>先看"改进建议"（在评分下方）</li>
+            <li>每次只改进1-2个问题</li>
+            <li>坚持3天，会看到明显效果</li>
+        </ol>
+
+        <h4>Q2：为什么我学得很认真，但评分不高？</h4>
+        <p><strong>可能原因：</strong></p>
+        <ul>
+            <li>暂停次数太多（建议&lt;5次/小时）</li>
+            <li>切换标签太频繁（建议&lt;10次/小时）</li>
+            <li>连续专注时间太短</li>
+        </ul>
+        <p class="highlight">不是你不认真，而是方法可以优化！</p>
+
+        <h4>Q3：评分多久更新一次？</h4>
+        <ul>
+            <li>实时记录数据</li>
+            <li>打开插件Popup即可查看最新评分</li>
+        </ul>
+
+        <h4>Q4：今天评分低会影响以后吗？</h4>
+        <ul>
+            <li>不会！每天都是新的开始</li>
+            <li>评分帮助你了解当天的学习质量</li>
+            <li>重点是找到规律，持续改进</li>
+        </ul>
+
+        <h2>🎯 目标设定建议</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>阶段</th>
+                    <th>目标</th>
+                    <th>重点</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>第1周</td>
+                    <td>60分以上（及格）</td>
+                    <td>了解哪些行为会影响评分</td>
+                </tr>
+                <tr>
+                    <td>第2周</td>
+                    <td>70分以上（良好）</td>
+                    <td>关闭手机、减少切换标签</td>
+                </tr>
+                <tr>
+                    <td>第3周</td>
+                    <td>80分以上（优秀）</td>
+                    <td>使用番茄钟，延长连续专注时间</td>
+                </tr>
+                <tr>
+                    <td>第4周</td>
+                    <td>稳定在80-90分</td>
+                    <td>保持良好学习习惯</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>💬 使用技巧</h2>
+
+        <div class="tip-box">
+            <strong>✅ 建议：</strong>
+            <ul>
+                <li>每天查看评分</li>
+                <li>对比自己的历史数据</li>
+                <li>根据建议逐步改进</li>
+            </ul>
+        </div>
+
+        <div class="warning-box">
+            <strong>❌ 避免：</strong>
+            <ul>
+                <li>不要过度在意分数（它只是工具）</li>
+                <li>不要为了高分而高分（学会才是目的）</li>
+                <li>不要和别人比较（每个人情况不同）</li>
+            </ul>
+        </div>
+
+        <div style="text-align: center; margin: 50px 0;">
+            <p style="font-size: 24px; font-weight: 600; color: #7E0C6E;">
+                记住：评分不是目的，提升学习效率才是～
+            </p>
+        </div>
+
+        <div style="text-align: center; color: #999; font-size: 14px; margin-top: 40px;">
+            <p>💡 温馨提示：阅读完毕后直接关闭此标签页即可</p>
+        </div>
+
+        <div class="footer">
+            <p>B站专注学习助手 - 学习质量评分系统</p>
+            <p>最后更新：2025-10-19</p>
+        </div>
+    </div>
+</body>
+</html>
+
