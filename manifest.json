@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "B站专注学习助手",
-  "version": "1.1.5",
+  "version": "2.0.0",
   "description": "为B站创建一个专注学习的环境，屏蔽干扰，提升学习效率",
   "permissions": [
     "storage",
@@ -45,7 +45,7 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["lib/chart.js/dist/chart.umd.js", "content/*"],
+      "resources": ["lib/chart.js/dist/chart.min.js", "content/*"],
       "matches": ["*://*.bilibili.com/*"]
     }
   ]

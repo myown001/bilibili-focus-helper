@@ -183,19 +183,7 @@ console.log('🚀 [focus-main.js] 文件开始加载 - v1.1.5 (使用hover处理
             
             await firstTimeSetup.showSetup();
             
-            // ⚠️ 已禁用首次设置后自动全屏 - 避免触发B站防御机制
-            // 设置完成后，等待用户手动点击进入全屏
-            /* 已禁用：setTimeout中调用会失去用户交互上下文，触发B站防御
-            if (isVideo && window.focusMode) {
-              setTimeout(() => {
-                window.focusMode._temporarilyDisableAutoFullscreen = false;
-                log('首次设置完成，重新启用自动全屏');
-                if (window.focusMode.settings && window.focusMode.settings.autoActivate) {
-                  window.focusMode.autoActivateFullscreen();
-                }
-              }, 500);
-            }
-            */
+            // 注：自动全屏功能已禁用（会触发B站防御机制，需等待用户手动点击）
             if (isVideo && window.focusMode) {
               window.focusMode._temporarilyDisableAutoFullscreen = false;
               log('首次设置完成，等待用户点击按钮进入全屏');
@@ -933,56 +921,12 @@ console.log('🚀 [focus-main.js] 文件开始加载 - v1.1.5 (使用hover处理
     
     // 页面UI增强处理
     function enhancePageUI() {
-      // ⚠️ 已永久禁用PageEnhancer - 修改DOM会触发B站防御机制
-      // 
-      // 经过深入调试发现：
-      // PageEnhancer.processNavBar() 和 PageEnhancer.hideSearchHotList()
-      // 会修改页面DOM，B站检测到后会触发防御机制，
-      // 给所有控制菜单项添加隐藏内联样式（display:none等），
-      // 导致控制栏菜单完全不可见。
-      // 
-      // 解决方案：完全禁用PageEnhancer的DOM修改功能
-      // 用户可以通过CSS隐藏这些元素，而不需要JS修改DOM
+      // 注：PageEnhancer已永久禁用
+      // 原因：修改页面DOM会触发B站防御机制，导致控制栏菜单不可见
+      // 解决方案：使用CSS方式隐藏元素，不通过JS修改DOM
       
       log('⚠️ PageEnhancer已禁用，避免触发B站防御机制');
       return true;
-      
-      /* 已永久禁用
-      try {
-        if (typeof PageEnhancer !== 'function') {
-          warn('PageEnhancer未加载，无法进行页面UI增强');
-          return false;
-        }
-        
-        log('开始应用页面UI增强...');
-        
-        try {
-          log('尝试处理导航栏...');
-          const navResult = PageEnhancer.processNavBar();
-          if (navResult) {
-            log('导航栏处理成功');
-          } else {
-            log('导航栏处理结果: 无法完全处理');
-          }
-        } catch (navErr) {
-          warn('处理导航栏时出错:', navErr);
-        }
-        
-        try {
-          log('尝试隐藏搜索热榜...');
-          PageEnhancer.hideSearchHotList();
-          log('搜索热榜隐藏成功');
-        } catch (searchErr) {
-          warn('隐藏搜索热榜时出错:', searchErr);
-        }
-        
-        log('页面UI增强功能已应用');
-        return true;
-      } catch (err) {
-        warn('应用页面UI增强功能时出错:', err);
-        return false;
-      }
-      */
     }
     
     // 初始化视频专注模式 - 在视频页面应用核心专注功能
@@ -1005,12 +949,7 @@ console.log('🚀 [focus-main.js] 文件开始加载 - v1.1.5 (使用hover处理
           window.focusMode.addBackToFullscreenButton();
         }
         
-        // ⚠️ 已禁用立即全屏 - 避免触发B站防御机制
-        // 只在用户点击引导按钮时才进入全屏
-        /* 已禁用：立即调用会失去用户交互上下文，触发B站防御
-        console.log('[专注模式] 立即尝试全屏，不等待视频加载');
-        window.focusMode.autoActivateFullscreen();
-        */
+        // 注：立即全屏已禁用，等待用户点击引导按钮（避免触发B站防御机制）
         console.log('[专注模式] 等待用户点击引导按钮进入全屏');
         
         // 设置全屏状态监视器
@@ -1092,26 +1031,7 @@ console.log('🚀 [focus-main.js] 文件开始加载 - v1.1.5 (使用hover处理
                 '.exit-transition-overlay.visible, [class*="-dialog"].fade-out, [class*="-overlay"].fade-out'
               );
               
-              // ⚠️ 已禁用自动恢复全屏 - 避免触发B站防御机制
-              // 只在用户手动操作时才进入全屏
-              /* 已禁用：监视器中调用会失去用户交互上下文，触发B站防御
-              const shouldSkipRestore = isExitInProgress || isExitHandlerActive || hasInteractiveDialog || 
-                                       isUserTyping || hasModalOrMenu || hasDisabledButtons || hasActiveTransitions;
-              
-              if (!shouldSkipRestore) {
-                console.log('[专注模式] 监视器检测到已退出全屏，尝试恢复');
-                window.focusMode.autoActivateFullscreen();
-              } else {
-                const reason = isExitInProgress ? '退出流程中' :
-                              isExitHandlerActive ? '退出处理器活动' :
-                              hasInteractiveDialog ? '交互对话框存在' :
-                              isUserTyping ? '用户正在输入' :
-                              hasModalOrMenu ? '模态框/菜单打开' :
-                              hasDisabledButtons ? '按钮交互进行中' :
-                              hasActiveTransitions ? '对话框过渡动画中' : '未知原因';
-                console.log(`[专注模式] 暂停自动恢复全屏：${reason}`);
-              }
-              */
+              // 注：自动恢复全屏已禁用（避免触发B站防御机制）
               console.log('[专注模式] 监视器已禁用自动恢复全屏功能');
             }
           }, 8000); // 降低到8秒检查一次，减少性能影响
@@ -1145,80 +1065,7 @@ console.log('🚀 [focus-main.js] 文件开始加载 - v1.1.5 (使用hover处理
           return [];
         };
         
-        // ⚠️ 已禁用视频事件监听自动全屏 - 避免触发B站防御机制
-        // 只在用户手动点击引导按钮时才进入全屏
-        /* 已禁用：视频事件中调用会失去用户交互上下文，触发B站防御
-        const waitForVideo = () => {
-          const videoElements = findVideoElements();
-          
-          if (videoElements.length > 0) {
-            console.log(`[专注模式] 找到${videoElements.length}个视频元素，设置加载监听器`);
-            
-            videoElements.forEach(videoElement => {
-              const eventHandlers = new Map();
-              
-              if (videoElement.readyState >= 2) {
-                console.log('[专注模式] 视频已预加载，尝试自动全屏');
-                window.focusMode.autoActivateFullscreen();
-                setupFullscreenMonitor();
-              }
-              
-              const videoEvents = ['canplay', 'loadeddata', 'play', 'playing'];
-              
-              videoEvents.forEach(eventName => {
-                if (videoElement[`_focus_${eventName}_handler`]) {
-                  videoElement.removeEventListener(eventName, videoElement[`_focus_${eventName}_handler`]);
-                }
-                
-                const handler = () => {
-                  console.log(`[专注模式] 视频事件 "${eventName}" 触发，尝试自动全屏`);
-                  if (window.focusMode) {
-                    window.focusMode.autoActivateFullscreen();
-                    setupFullscreenMonitor();
-                  }
-                  
-                  videoElement.removeEventListener(eventName, handler);
-                  delete videoElement[`_focus_${eventName}_handler`];
-                };
-                
-                videoElement[`_focus_${eventName}_handler`] = handler;
-                videoElement.addEventListener(eventName, handler, { once: true });
-              });
-              
-              if (videoElement._focus_timeupdate_handler) {
-                videoElement.removeEventListener('timeupdate', videoElement._focus_timeupdate_handler);
-              }
-              
-              const timeUpdateHandler = () => {
-                if (videoElement.currentTime > 2) {
-                  console.log('[专注模式] 视频已播放2秒，确保全屏状态');
-                  if (window.focusMode && 
-                      window.focusMode.settings && 
-                      window.focusMode.settings.autoActivate && 
-                      !window.focusMode.checkFullscreenState()) {
-                    window.focusMode.autoActivateFullscreen();
-                    setupFullscreenMonitor();
-                  }
-                  
-                  videoElement.removeEventListener('timeupdate', timeUpdateHandler);
-                  delete videoElement._focus_timeupdate_handler;
-                }
-              };
-              
-              videoElement._focus_timeupdate_handler = timeUpdateHandler;
-              videoElement.addEventListener('timeupdate', timeUpdateHandler);
-            });
-            
-            return true;
-          } else {
-            console.log('[专注模式] 视频元素尚未加载，等待后再次检查');
-            setTimeout(waitForVideo, 500);
-            return false;
-          }
-        };
-        
-        waitForVideo();
-        */
+        // 注：视频事件监听自动全屏已禁用（避免触发B站防御机制）
         console.log('[专注模式] 已禁用视频事件自动全屏，等待用户点击引导按钮');
         
         // 监听DOM变化，检测视频播放器的动态添加
@@ -1255,17 +1102,7 @@ console.log('🚀 [focus-main.js] 文件开始加载 - v1.1.5 (使用hover处理
             });
             
             if (shouldCheckVideo) {
-              // ⚠️ 已禁用DOM变化自动全屏 - 避免触发B站防御机制
-              /* 已禁用：DOM观察器中调用会失去用户交互上下文
-              console.log('[专注模式] 检测到视频相关DOM变化，尝试自动全屏');
-              if (window.focusMode && 
-                  window.focusMode.settings && 
-                  window.focusMode.settings.autoActivate) {
-                window.focusMode.autoActivateFullscreen();
-                setupFullscreenMonitor();
-                waitForVideo();
-              }
-              */
+              // 注：DOM变化自动全屏已禁用（避免触发B站防御机制）
               console.log('[专注模式] 检测到视频DOM变化，等待用户点击进入全屏');
             }
           });
